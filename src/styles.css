@@ -773,14 +773,62 @@ button {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
+  align-items: start;
 }
 
 .category-card {
+  position: relative;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--node-color) 30%, rgba(236, 234, 222, 0.12));
   border-radius: 5px;
   background: rgba(7, 11, 13, 0.78);
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+  transform-origin: center;
+  transition:
+    transform 460ms cubic-bezier(0.2, 0.9, 0.2, 1),
+    opacity 360ms ease,
+    filter 420ms ease,
+    border-color 360ms ease,
+    background 360ms ease,
+    box-shadow 420ms ease;
+  will-change: transform, filter, opacity;
+}
+
+.category-grid.has-help-focus .category-card.is-help-open {
+  z-index: 4;
+  transform: translateY(-5px) scale(1.045);
+  opacity: 1;
+  filter: none;
+  border-color: color-mix(in srgb, var(--node-color) 62%, rgba(236, 234, 222, 0.24));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--node-color) 12%, transparent), transparent 58%),
+    rgba(10, 14, 15, 0.96);
+  box-shadow:
+    0 28px 76px rgba(0, 0, 0, 0.42),
+    0 0 0 1px color-mix(in srgb, var(--node-color) 22%, transparent);
+  animation: categoryHelpFocus 520ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.category-grid.has-help-focus .category-card.is-help-dimmed {
+  transform: scale(0.965);
+  opacity: 0.34;
+  filter: grayscale(0.85) blur(2.4px) saturate(0.36);
+}
+
+.category-grid.has-help-focus .category-card.is-help-dimmed:hover {
+  opacity: 0.48;
+  filter: grayscale(0.72) blur(1.6px) saturate(0.48);
+}
+
+@keyframes categoryHelpFocus {
+  0% {
+    transform: translateY(0) scale(0.985);
+    filter: blur(3px) brightness(0.92);
+  }
+  100% {
+    transform: translateY(-5px) scale(1.045);
+    filter: blur(0) brightness(1);
+  }
 }
 
 .category-main {
@@ -905,10 +953,27 @@ button {
 }
 
 .category-card details[open] {
-  animation: expandFocus 220ms cubic-bezier(0.2, 0.9, 0.2, 1);
+  animation: expandFocus 360ms cubic-bezier(0.2, 0.9, 0.2, 1);
   background:
     linear-gradient(90deg, color-mix(in srgb, var(--node-color) 10%, transparent), transparent 70%),
     rgba(255, 255, 255, 0.018);
+}
+
+.category-card details[open] p {
+  animation: categoryHelpText 420ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+@keyframes categoryHelpText {
+  0% {
+    opacity: 0;
+    transform: translateY(7px);
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
 }
 
 .category-card details,
@@ -2528,6 +2593,16 @@ button {
   background: color-mix(in srgb, var(--theme-color) 7%, #101211);
 }
 
+.category-grid.has-help-focus .category-card.is-help-open {
+  background:
+    radial-gradient(circle at 86% 12%, color-mix(in srgb, var(--node-color) 18%, transparent), transparent 28%),
+    rgba(10, 14, 15, 0.97);
+}
+
+.category-grid.has-help-focus .category-card.is-help-dimmed {
+  opacity: 0.32;
+}
+
 .doc-split {
   display: grid;
   gap: 12px;
@@ -2728,6 +2803,16 @@ button {
 
   .category-grid {
     grid-template-columns: 1fr;
+  }
+
+  .category-grid.has-help-focus .category-card.is-help-open {
+    transform: translateY(-3px) scale(1.012);
+  }
+
+  .category-grid.has-help-focus .category-card.is-help-dimmed {
+    transform: scale(0.985);
+    opacity: 0.42;
+    filter: grayscale(0.75) blur(1.6px) saturate(0.45);
   }
 
   .category-main {

@@ -651,6 +651,8 @@ type CategoryGateProps = {
 };
 
 function CategoryGate({ onSelect }: CategoryGateProps) {
+  const [openHelpId, setOpenHelpId] = useState<CategoryId | null>(null);
+
   return (
     <motion.section
       className="category-gate"
@@ -663,10 +665,12 @@ function CategoryGate({ onSelect }: CategoryGateProps) {
         <div className="category-heading">
           <h1>ジャンルを選ぶ</h1>
         </div>
-        <div className="category-grid">
+        <div className={`category-grid ${openHelpId ? 'has-help-focus' : ''}`}>
           {categories.map((category) => (
             <article
-              className="category-card"
+              className={`category-card ${
+                openHelpId === category.id ? 'is-help-open' : openHelpId ? 'is-help-dimmed' : ''
+              }`}
               key={category.id}
               style={{ '--node-color': category.color } as React.CSSProperties}
             >
@@ -679,7 +683,17 @@ function CategoryGate({ onSelect }: CategoryGateProps) {
                   ))}
                 </span>
               </button>
-              <details>
+              <details
+                onToggle={(event) => {
+                  const isOpen = event.currentTarget.open;
+                  if (isOpen) {
+                    setOpenHelpId(category.id);
+                    return;
+                  }
+                  setOpenHelpId((current) => (current === category.id ? null : current));
+                }}
+                open={openHelpId === category.id}
+              >
                 <summary><SummaryLabel>何それ？</SummaryLabel></summary>
                 <p>{category.what}</p>
               </details>
