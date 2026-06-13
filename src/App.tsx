@@ -12,6 +12,8 @@ import {
 import { motion } from 'framer-motion';
 import { Check, Radar, TerminalSquare } from 'lucide-react';
 import {
+  attackPhases,
+  categories,
   getCategory,
   getNode,
   learningEdges,
@@ -20,7 +22,7 @@ import {
   type LearningNodeData,
 } from './data/knowledge';
 
-type GateState = 'notice' | 'workspace';
+type GateState = 'notice' | 'category' | 'workspace';
 
 function LearningNode({ data, selected }: NodeProps<Node<LearningNodeData>>) {
   const category = getCategory(data.category);
@@ -38,9 +40,7 @@ function LearningNode({ data, selected }: NodeProps<Node<LearningNodeData>>) {
 }
 
 const nodeTypes = { learning: LearningNode };
-
-const attackPhases = ['偵察', '列挙', '侵入', '権限昇格', '維持・痕跡消去'] as const;
-const activePhase = '偵察';
+const defaultCategory = categories[0]!;
 
 function getFlowWindowIds(nodeId: string, categoryId: CategoryId, previousId?: string) {
   const rootId = getCategory(categoryId).rootNodeId;
@@ -69,23 +69,24 @@ function getFlowWindowIds(nodeId: string, categoryId: CategoryId, previousId?: s
 export function App() {
   const [gateState, setGateState] = useState<GateState>('notice');
   const [agreed, setAgreed] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryId>('web');
-  const [selectedNodeId, setSelectedNodeId] = useState('web-root');
-  const [history, setHistory] = useState<string[]>(['web-root']);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId>(defaultCategory.id);
+  const [selectedNodeId, setSelectedNodeId] = useState(defaultCategory.rootNodeId);
+  const [history, setHistory] = useState<string[]>([defaultCategory.rootNodeId]);
   const [flow, setFlow] = useState<ReactFlowInstance<Node<LearningNodeData>, Edge> | null>(null);
 
   useEffect(() => {
     if (gateState !== 'notice') return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Enter' && agreed) {
-        setGateState('workspace');
+        setGateState('category');
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [agreed, gateState]);
 
-  const selectedNode = getNode(selectedNodeId) ?? getNode('web-root')!;
+  const selectedNode = getNode(selectedNodeId) ?? getNode(defaultCategory.rootNodeId)!;
+  const activePhase = selectedNode.data.phase;
   const previousNodeId = history.length >= 2 ? history[history.length - 2] : undefined;
   const selectedRootId = getCategory(selectedCategory).rootNodeId;
   const fallbackNextIds = useMemo(
@@ -150,6 +151,15 @@ export function App() {
     [flow, selectedNodeId],
   );
 
+  const chooseCategory = useCallback((categoryId: CategoryId) => {
+    const category = getCategory(categoryId);
+    setSelectedCategory(categoryId);
+    setSelectedNodeId(category.rootNodeId);
+    setHistory([category.rootNodeId]);
+    setGateState('workspace');
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'auto' }));
+  }, []);
+
   useEffect(() => {
     if (!flow || gateState !== 'workspace') return;
     const timer = window.setTimeout(() => {
@@ -190,11 +200,12 @@ export function App() {
             <NoticeGate
               agreed={agreed}
               onAgreedChange={setAgreed}
-              onEnter={() => agreed && setGateState('workspace')}
+              onEnter={() => agreed && setGateState('category')}
             />
             <BootScreen overlay />
           </>
         )}
+        {gateState === 'category' && <CategoryGate onSelect={chooseCategory} />}
         {gateState === 'workspace' && (
           <motion.div
             className={`app-shell ${selectedNodeId !== selectedRootId ? 'has-selected-focus' : ''}`}
@@ -219,6 +230,9 @@ export function App() {
             </span>
           ))}
         </div>
+        <button className="genre-button" onClick={() => setGateState('category')} type="button">
+          ジャンル
+        </button>
       </header>
 
       <main className="map-stage">
@@ -327,6 +341,47 @@ export function App() {
           </motion.div>
         )}
     </div>
+  );
+}
+
+type CategoryGateProps = {
+  onSelect: (categoryId: CategoryId) => void;
+};
+
+function CategoryGate({ onSelect }: CategoryGateProps) {
+  return (
+    <motion.section
+      className="category-gate"
+      initial={{ opacity: 0, filter: 'blur(10px)' }}
+      animate={{ opacity: 1, filter: 'blur(0px)' }}
+      transition={{ duration: 0.32, ease: [0.2, 0.9, 0.2, 1] }}
+    >
+      <div className="category-shell">
+        <div className="category-heading">
+          <h1>ジャンルを選ぶ</h1>
+          <p>今から見る対象をひとつ選ぶ。各ジャンルに偵察から記録整理までの流れを入れてある。</p>
+        </div>
+        <div className="category-grid">
+          {categories.map((category) => (
+            <article
+              className="category-card"
+              key={category.id}
+              style={{ '--node-color': category.color } as React.CSSProperties}
+            >
+              <button className="category-main" onClick={() => onSelect(category.id)} type="button">
+                <strong>{category.title}</strong>
+                <span>{category.subtitle}</span>
+                <em>{category.choose}</em>
+              </button>
+              <details>
+                <summary>何それ？</summary>
+                <p>{category.what}</p>
+              </details>
+            </article>
+          ))}
+        </div>
+      </div>
+    </motion.section>
   );
 }
 
