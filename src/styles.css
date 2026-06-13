@@ -660,30 +660,28 @@ button {
 
 .react-flow__edge.edge-hot path {
   stroke: var(--green);
-  stroke-width: 3;
-  filter: drop-shadow(0 0 9px rgba(42, 255, 190, 0.85));
-  stroke-dasharray: 8 8;
-  animation: edgeDash 0.9s linear infinite;
+  stroke-width: 1;
+  stroke-opacity: 0.22;
+  filter: none;
+  stroke-dasharray: none;
 }
 
 .react-flow__edge.edge-calm path {
-  stroke: rgba(104, 216, 255, 0.43);
-}
-
-@keyframes edgeDash {
-  to {
-    stroke-dashoffset: -16;
-  }
+  stroke: rgba(213, 255, 244, 0.18);
+  stroke-width: 1;
+  stroke-opacity: 0.08;
 }
 
 .react-flow__edge-textbg {
-  fill: rgba(4, 6, 8, 0.9);
+  display: none;
 }
 
 .react-flow__edge-text {
-  fill: #dce6e0;
-  font-family: "Cascadia Mono", Consolas, monospace;
-  font-size: 10px;
+  display: none;
+}
+
+.react-flow__edge {
+  pointer-events: none;
 }
 
 .react-flow__node {
