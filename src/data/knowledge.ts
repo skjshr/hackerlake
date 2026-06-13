@@ -22,6 +22,7 @@ export type LearningNodeData = {
   category: CategoryId;
   phase: AttackPhase;
   level: number;
+  flowRelation?: '現在地' | '同じ段階' | '次の段階' | '前提確認';
   summary: string;
   what: string;
   intent: string;
@@ -1242,14 +1243,14 @@ function buildNext(plan: CategoryPlan, phaseIndex: number, nodeIndex: number): s
   return Array.from(new Set(ids));
 }
 
-export const learningNodes: Node<LearningNodeData>[] = allPlans.flatMap((plan, categoryIndex) =>
+export const learningNodes: Node<LearningNodeData>[] = allPlans.flatMap((plan) =>
   plan.phases.flatMap((phasePlan, phaseIndex) =>
     phasePlan.nodes.map((seed, nodeIndex) => ({
       id: nodeId(plan.id, seed.id),
       type: 'learning',
       position: {
-        x: -760 + phaseIndex * 360,
-        y: (nodeIndex - 0.5) * 150 + (categoryIndex % 2) * 20,
+        x: -860 + phaseIndex * 420,
+        y: (nodeIndex - (phasePlan.nodes.length - 1) / 2) * 180,
       },
       data: {
         title: seed.title,

@@ -11,12 +11,6 @@ import {
 } from '@xyflow/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Radar, TerminalSquare } from 'lucide-react';
-import cryptoScreen from './assets/screens/crypto.webp';
-import forensicsScreen from './assets/screens/forensics.webp';
-import networkScreen from './assets/screens/network.webp';
-import pwnScreen from './assets/screens/pwn.webp';
-import reverseScreen from './assets/screens/reverse.webp';
-import webScreen from './assets/screens/web.webp';
 import {
   attackPhases,
   categories,
@@ -73,7 +67,7 @@ function getCategoryKeywords(category: typeof categories[number]) {
   return category.subtitle.split('・').map((keyword) => keyword.replace(/を読む$/, '')).slice(0, 4);
 }
 
-function getConnectionKind(current: LearningNodeData, target: LearningNodeData) {
+function getConnectionKind(current: LearningNodeData, target: LearningNodeData): NonNullable<LearningNodeData['flowRelation']> {
   if (target.level > current.level) return '次の段階';
   if (target.level < current.level) return '前提確認';
   return '同じ段階';
@@ -101,23 +95,15 @@ function LearningNode({ data }: NodeProps<Node<LearningNodeData>>) {
     >
       <Handle className="node-handle node-handle-target" position={Position.Left} type="target" />
       <Handle className="node-handle node-handle-source" position={Position.Right} type="source" />
-      <span>{phaseUi[data.phase].label}</span>
+      <span className="node-phase">{phaseUi[data.phase].label}</span>
       <strong>{data.title}</strong>
+      {data.flowRelation && <em className="node-relation">{data.flowRelation}</em>}
     </div>
   );
 }
 
 const nodeTypes = { learning: LearningNode };
 const defaultCategory = categories[0]!;
-
-const screenshotAssets: Record<CategoryId, { alt: string; src: string }> = {
-  web: { alt: 'Web CTFのブラウザと通信確認画面', src: webScreen },
-  network: { alt: 'ネットワークCTFの許可ラボ観察画面', src: networkScreen },
-  forensics: { alt: 'フォレンジックCTFの証拠ビューア画面', src: forensicsScreen },
-  crypto: { alt: '暗号CTFの問題文と比較メモ画面', src: cryptoScreen },
-  reverse: { alt: 'リバースCTFの解析ビュー画面', src: reverseScreen },
-  pwn: { alt: 'Pwn CTFのローカルデバッグ画面', src: pwnScreen },
-};
 
 function SummaryLabel({ children }: { children: string }) {
   return <span className="summary-label">{children}</span>;
@@ -166,15 +152,54 @@ function getLogExample(node: LearningNodeData) {
 }
 
 function ScreenshotMock({ node }: { node: LearningNodeData }) {
-  const asset = screenshotAssets[node.category];
-  const first = node.observe[0];
+  const category = getCategory(node.category);
+  const focusItems = node.observe.slice(0, 3);
+  const primary = focusItems[0];
+  const secondary = focusItems[1];
 
   return (
-    <figure className="screen-mock">
-      <img alt={asset.alt} decoding="async" loading="lazy" src={asset.src} />
+    <figure
+      aria-label={`${node.title}の画面例`}
+      className={`screen-mock topic-screen topic-screen-${node.category}`}
+      style={{ '--node-color': category.color } as React.CSSProperties}
+    >
+      <div className="screen-toolbar">
+        <i />
+        <i />
+        <i />
+        <span>{category.title} / {phaseUi[node.phase].label} / {node.title}</span>
+      </div>
+      <div className="topic-screen-body">
+        <section className="topic-focus-card">
+          <small>FOCUS</small>
+          <strong>{primary?.label ?? node.title}</strong>
+          <p>{primary ? compactText(primary.what) : compactText(node.summary)}</p>
+        </section>
+        <div className="topic-side-stack">
+          <div>
+            <small>LOOK</small>
+            <span>{primary ? compactText(primary.how) : compactText(node.intent)}</span>
+          </div>
+          <div>
+            <small>CHECK</small>
+            <span>{secondary ? compactText(secondary.label) : '次の根拠'}</span>
+          </div>
+        </div>
+        <div className="topic-evidence-list">
+          {focusItems.map((item, index) => (
+            <span className={index === 0 ? 'active' : ''} key={item.label}>
+              {item.label}
+            </span>
+          ))}
+        </div>
+        <div className="topic-decision">
+          <small>NEXT</small>
+          <span>{node.branches[0]?.signal ?? node.branches[0]?.action ?? '説明できたら次の段階へ進む'}</span>
+        </div>
+      </div>
       <figcaption>
         <strong>見る点</strong>
-        <span>{first?.label ?? node.title}</span>
+        <span>{primary?.label ?? node.title}</span>
       </figcaption>
     </figure>
   );
@@ -256,7 +281,10 @@ export function App() {
         .map((node) => ({
           ...node,
           selected: false,
-          data: node.data,
+          data: {
+            ...node.data,
+            flowRelation: node.id === selectedNodeId ? '現在地' : getConnectionKind(selectedNode.data, node.data),
+          },
           className:
             node.id === selectedNodeId
               ? 'is-focus-node'
@@ -264,7 +292,7 @@ export function App() {
                 ? 'is-choice-node'
                 : 'is-context-node',
         })),
-    [activeIds, nextChoiceIds, selectedCategory, selectedNodeId, selectedRootId],
+    [activeIds, nextChoiceIds, selectedCategory, selectedNode.data, selectedNodeId, selectedRootId],
   );
 
   const edges = useMemo(
@@ -434,6 +462,10 @@ export function App() {
           <div>
             <span>{selectedCategoryData.title} / {phaseUi[activePhase].label}</span>
             <h1>{selectedNode.data.title}</h1>
+          </div>
+          <div className="stage-relation-guide" aria-label="map relation guide">
+            <span>同じ列 = 同じ段階</span>
+            <span>右の列 = 次の段階</span>
           </div>
         </div>
         <div className="connection-rail" aria-label="node connections">
@@ -660,6 +692,14 @@ function CategoryGate({ onSelect }: CategoryGateProps) {
       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
       exit={{ opacity: 0, y: -8, filter: 'blur(14px)' }}
       transition={{ duration: 0.34, ease: [0.2, 0.9, 0.2, 1] }}
+      onClickCapture={(event) => {
+        if (!openHelpId) return;
+        const target = event.target as HTMLElement;
+        if (target.closest('.category-card.is-help-open')) return;
+        event.preventDefault();
+        event.stopPropagation();
+        setOpenHelpId(null);
+      }}
     >
       <div className="category-shell">
         <div className="category-heading">
@@ -674,7 +714,17 @@ function CategoryGate({ onSelect }: CategoryGateProps) {
               key={category.id}
               style={{ '--node-color': category.color } as React.CSSProperties}
             >
-              <button className="category-main" onClick={() => onSelect(category.id)} type="button">
+              <button
+                className="category-main"
+                onClick={() => {
+                  if (openHelpId) {
+                    setOpenHelpId(null);
+                    return;
+                  }
+                  onSelect(category.id);
+                }}
+                type="button"
+              >
                 <small>{category.englishTitle}</small>
                 <strong>{category.title}</strong>
                 <span className="category-keywords">
