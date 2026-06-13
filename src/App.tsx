@@ -63,6 +63,10 @@ function compactText(text: string) {
   return text.length <= 90 ? stripStops(text) : text;
 }
 
+function getCategoryKeywords(category: typeof categories[number]) {
+  return category.subtitle.split('・').map((keyword) => keyword.replace(/を読む$/, '')).slice(0, 4);
+}
+
 function getConnectionKind(current: LearningNodeData, target: LearningNodeData) {
   if (target.level > current.level) return '次の段階';
   if (target.level < current.level) return '前提確認';
@@ -116,22 +120,32 @@ function ScreenshotMock({ node }: { node: LearningNodeData }) {
         </div>
         <div className="web-layout">
           <nav>
-            <strong>検証ポータル</strong>
-            <span>ホーム</span>
-            <span>ログイン</span>
-            <span>アップロード</span>
+            <strong>CTF Shop</strong>
+            <span>Home</span>
+            <span>Login</span>
+            <span>Upload</span>
           </nav>
           <main>
             <section>
-              <h4>{node.title}</h4>
-              <p>{node.summary}</p>
-              <label>検索</label>
-              <div className="fake-input">user=guest</div>
+              <div className="shop-hero">
+                <span>guest session</span>
+                <strong>{node.title}</strong>
+              </div>
+              <label>Search</label>
+              <div className="fake-input">?q=guest&amp;sort=recent</div>
+              <div className="web-table">
+                <span>GET /app</span>
+                <span>200</span>
+                <span>Set-Cookie</span>
+                <span>session=eyJ...</span>
+              </div>
             </section>
             <aside>
+              <b>Headers</b>
               <span>Cookie: session=...</span>
-              <span>状態: 200</span>
-              <span>方式: GET</span>
+              <span>Status: 200</span>
+              <span>Method: GET</span>
+              <span>Content-Type: json</span>
             </aside>
           </main>
         </div>
@@ -149,10 +163,11 @@ function ScreenshotMock({ node }: { node: LearningNodeData }) {
           <span>ラボ端末</span>
         </div>
         <div className="terminal-lines">
-          <p>$ observe lab-network --scope allowed</p>
-          <p>host-a.lab  10.10.0.12  http  open</p>
-          <p>host-b.lab  10.10.0.21  ssh   filtered</p>
-          <p>観察: {first?.label ?? node.title}</p>
+          <p><span>$</span> observe lab-network --scope allowed</p>
+          <p>10.10.0.12  host-a.lab  http  open  ttl=63</p>
+          <p>10.10.0.21  host-b.lab  ssh   filtered</p>
+          <p>10.10.0.40  admin.lab   dns   internal</p>
+          <p className="screen-callout">見る点: {first?.label ?? node.title}</p>
         </div>
       </div>
     );
@@ -169,11 +184,12 @@ function ScreenshotMock({ node }: { node: LearningNodeData }) {
         </div>
         <div className="evidence-grid">
           <div>
-            <span>image001.png</span>
+            <span className="active">image001.png</span>
             <span>access.log</span>
             <span>capture.pcap</span>
+            <span>timeline.csv</span>
           </div>
-          <pre>0000  89 50 4e 47 0d 0a 1a 0a{"\n"}0010  49 48 44 52 00 00 03 20{"\n"}0020  {node.title.slice(0, 18)}</pre>
+          <pre>0000  89 50 4e 47 0d 0a 1a 0a{"\n"}0010  49 48 44 52 00 00 03 20{"\n"}0020  hidden chunk: {node.title.slice(0, 18)}{"\n"}0030  modified: 2026-06-13 22:14</pre>
         </div>
       </div>
     );
@@ -189,10 +205,14 @@ function ScreenshotMock({ node }: { node: LearningNodeData }) {
           <span>problem.txt / 問題文</span>
         </div>
         <div className="crypto-paper">
-          <p>ciphertext_1 = 6f 2a 90 c1 ...</p>
-          <p>ciphertext_2 = 6f 2a 91 54 ...</p>
-          <p>hint = same prefix, same length</p>
-          <strong>{first?.label ?? node.title}</strong>
+          <p>ciphertext_1 = 6f 2a 90 c1 42 11 ...</p>
+          <p>ciphertext_2 = 6f 2a 91 54 42 10 ...</p>
+          <p>hint = same prefix / same length</p>
+          <div>
+            <span>len: 64</span>
+            <span>repeat: 6f 2a</span>
+            <span>{first?.label ?? node.title}</span>
+          </div>
         </div>
       </div>
     );
@@ -208,11 +228,12 @@ function ScreenshotMock({ node }: { node: LearningNodeData }) {
           <span>文字列一覧 / sample.bin</span>
         </div>
         <div className="reverse-columns">
-          <pre>00401210  check_input{"\n"}00401248  verify_user{"\n"}00401302  success</pre>
+          <pre>00401210  call read_input{"\n"}00401248  cmp eax, 0x23{"\n"}00401252  jne fail{"\n"}00401302  success</pre>
           <div>
-            <span>{first?.label ?? node.title}</span>
+            <span className="active">{first?.label ?? node.title}</span>
             <span>{second?.label ?? '入力の流れ'}</span>
             <span>{third?.label ?? '分岐の位置'}</span>
+            <span>strings: success / invalid</span>
           </div>
         </div>
       </div>
@@ -228,10 +249,10 @@ function ScreenshotMock({ node }: { node: LearningNodeData }) {
         <span>デバッガ / ローカルラボ</span>
       </div>
       <div className="pwn-debug">
-        <p>入力サイズ: 64 bytes</p>
-        <p>結果: ローカルラボ内で再現</p>
-        <p>見る点: {first?.label ?? node.title}</p>
-        <p>許可された環境の外では試さない</p>
+        <p>RIP  0x0000000000401234</p>
+        <p>RSP  0x00007fffffffe2b0</p>
+        <p>input 64 bytes / crash reproducible</p>
+        <p className="screen-callout">見る点: {first?.label ?? node.title}</p>
       </div>
     </div>
   );
@@ -683,8 +704,11 @@ function CategoryGate({ onSelect }: CategoryGateProps) {
               <button className="category-main" onClick={() => onSelect(category.id)} type="button">
                 <small>{category.englishTitle}</small>
                 <strong>{category.title}</strong>
-                <span>{compactText(category.subtitle)}</span>
-                <em>{compactText(category.choose)}</em>
+                <span className="category-keywords">
+                  {getCategoryKeywords(category).map((keyword) => (
+                    <span key={keyword}>{keyword}</span>
+                  ))}
+                </span>
               </button>
               <details>
                 <summary>何それ？</summary>

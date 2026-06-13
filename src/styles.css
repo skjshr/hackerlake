@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+JP:wght@400;500;600;700;800&family=Shippori+Mincho:wght@500;600;700&display=swap");
+
 :root {
   color: #f0eadc;
   background: #070706;
@@ -17,9 +19,9 @@
   --amber: #b48957;
   --cyan: #7d8f90;
   --red: #9b4b43;
-  --font-ui: "BIZ UDPGothic", "Yu Gothic", "Yu Gothic UI", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
-  --font-display: "BIZ UDPMincho", "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif;
-  --font-mono: "UDEV Gothic", "Cascadia Mono", Consolas, monospace;
+  --font-ui: "IBM Plex Sans JP", "Aptos", "Segoe UI Variable Text", "Yu Gothic UI", "Hiragino Kaku Gothic ProN", sans-serif;
+  --font-display: "Shippori Mincho", "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif;
+  --font-mono: "IBM Plex Mono", "UDEV Gothic", "Cascadia Mono", Consolas, monospace;
 }
 
 * {
@@ -104,6 +106,65 @@ button {
   min-height: 100vh;
   place-items: center;
   padding: 24px;
+}
+
+.notice-gate {
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 20% 18%, rgba(0, 96, 255, 0.32), transparent 34%),
+    radial-gradient(ellipse at 82% 24%, rgba(255, 34, 42, 0.36), transparent 34%),
+    radial-gradient(circle at 50% 70%, rgba(236, 234, 222, 0.05), transparent 32%),
+    linear-gradient(180deg, #030407, #080403 58%, #020203);
+}
+
+.notice-gate::before,
+.notice-gate::after {
+  content: "";
+  position: absolute;
+  inset: -18%;
+  z-index: -2;
+  pointer-events: none;
+  filter: blur(34px);
+  mix-blend-mode: screen;
+}
+
+.notice-gate::before {
+  background:
+    radial-gradient(ellipse at 19% 42%, rgba(0, 80, 255, 0.7), transparent 28%),
+    radial-gradient(ellipse at 78% 44%, rgba(255, 23, 38, 0.68), transparent 30%);
+  animation: sirenWash 5.4s ease-in-out infinite;
+}
+
+.notice-gate::after {
+  z-index: -1;
+  opacity: 0.55;
+  background:
+    linear-gradient(105deg, transparent 0 28%, rgba(0, 104, 255, 0.28) 42%, transparent 56%),
+    linear-gradient(252deg, transparent 0 30%, rgba(255, 38, 51, 0.3) 44%, transparent 58%),
+    repeating-linear-gradient(0deg, transparent 0 6px, rgba(255, 255, 255, 0.025) 7px, transparent 8px);
+  animation: sirenSweep 3.8s ease-in-out infinite;
+}
+
+@keyframes sirenWash {
+  0%,
+  100% {
+    transform: translate3d(-2%, 0, 0) scale(1);
+    opacity: 0.76;
+  }
+  50% {
+    transform: translate3d(2%, -1%, 0) scale(1.05);
+    opacity: 0.98;
+  }
+}
+
+@keyframes sirenSweep {
+  0%,
+  100% {
+    transform: translateX(-4%) rotate(-2deg);
+  }
+  50% {
+    transform: translateX(4%) rotate(2deg);
+  }
 }
 
 .boot-screen-overlay {
@@ -198,7 +259,7 @@ button {
   bottom: 126px;
   margin: 0;
   color: var(--green);
-  font-family: "Cascadia Mono", Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: clamp(16px, 2vw, 24px);
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -334,7 +395,7 @@ button {
   color: #03110d;
   background: var(--green);
   cursor: pointer;
-  font-family: "Cascadia Mono", Consolas, monospace;
+  font-family: var(--font-mono);
   font-weight: 700;
   letter-spacing: 0.08em;
   clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
@@ -355,9 +416,8 @@ button {
   filter: drop-shadow(0 0 18px rgba(142, 157, 126, 0.42));
 }
 
-/* Pre-game title / caution skin */
-.boot-screen,
-.notice-gate {
+/* Pre-game title skin */
+.boot-screen {
   background:
     radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.055), transparent 24%),
     linear-gradient(180deg, #080806, #020202 58%, #070705);
@@ -453,7 +513,7 @@ button {
 
 .boot-frame h1 {
   color: #eceade;
-  font-family: "Arial Narrow", "Helvetica Neue", var(--font-ui);
+  font-family: var(--font-ui);
   font-size: clamp(48px, 9vw, 126px);
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -507,12 +567,17 @@ button {
 
 .notice-shell {
   width: min(700px, 92vw);
-  border: 1px solid rgba(192, 38, 38, 0.46);
+  border: 1px solid rgba(236, 234, 222, 0.18);
   background:
-    linear-gradient(145deg, rgba(127, 29, 29, 0.18), transparent 42%),
-    rgba(6, 9, 10, 0.93);
+    radial-gradient(circle at 0% 0%, rgba(0, 96, 255, 0.18), transparent 34%),
+    radial-gradient(circle at 100% 6%, rgba(255, 23, 38, 0.22), transparent 36%),
+    linear-gradient(145deg, rgba(10, 12, 18, 0.86), rgba(6, 7, 8, 0.9));
   clip-path: none;
-  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.36);
+  box-shadow:
+    0 28px 90px rgba(0, 0, 0, 0.5),
+    0 0 70px rgba(0, 80, 255, 0.13),
+    0 0 90px rgba(255, 31, 42, 0.12);
+  backdrop-filter: blur(18px);
 }
 
 .notice-shell::before {
@@ -673,7 +738,7 @@ button {
 }
 
 .category-shell {
-  width: min(1100px, 94vw);
+  width: min(980px, 94vw);
 }
 
 .category-heading {
@@ -693,7 +758,7 @@ button {
 .category-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .category-card {
@@ -707,9 +772,9 @@ button {
 .category-main {
   display: grid;
   width: 100%;
-  min-height: 150px;
-  gap: 8px;
-  padding: 18px;
+  min-height: 118px;
+  gap: 7px;
+  padding: 15px 16px;
   border: 0;
   color: var(--text);
   background:
@@ -727,7 +792,7 @@ button {
   align-self: start;
   color: color-mix(in srgb, var(--node-color) 76%, #f0eadc);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 740;
   letter-spacing: 0.04em;
 }
@@ -748,7 +813,26 @@ button {
   line-height: 1.08;
 }
 
-.category-main span {
+.category-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.category-keywords span {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  padding: 0 8px;
+  border: 1px solid color-mix(in srgb, var(--node-color) 28%, rgba(236, 234, 222, 0.1));
+  color: rgba(236, 234, 222, 0.78);
+  background: color-mix(in srgb, var(--node-color) 8%, rgba(255, 255, 255, 0.018));
+  font-size: 11px;
+  font-weight: 560;
+  line-height: 1;
+}
+
+.category-main > span:not(.category-keywords) {
   color: rgba(236, 234, 222, 0.78);
   font-size: 13px;
   line-height: 1.55;
@@ -778,6 +862,18 @@ button {
   font-size: 13px;
   font-weight: 650;
   list-style: none;
+}
+
+.brief-more summary::first-letter,
+.detail-explain-grid summary::first-letter,
+.note-template summary::first-letter,
+.screenshot-block summary::first-letter,
+.detail-block summary::first-letter,
+.inline-help summary::first-letter,
+.category-card summary::first-letter {
+  color: color-mix(in srgb, var(--theme-color, var(--node-color)) 78%, #f0eadc);
+  font-size: 1.28em;
+  font-weight: 780;
 }
 
 .category-card summary::-webkit-details-marker {
@@ -877,7 +973,7 @@ button {
 
 .brand div span {
   color: var(--muted);
-  font-family: "Cascadia Mono", Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
 }
 
@@ -1041,7 +1137,7 @@ button {
 
 .tiny-label {
   color: var(--green);
-  font-family: "Cascadia Mono", Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   text-transform: uppercase;
 }
@@ -1533,21 +1629,26 @@ button {
   overflow: hidden;
   margin: 4px 0 12px;
   border: 1px solid color-mix(in srgb, var(--theme-color) 30%, rgba(224, 214, 190, 0.1));
-  border-radius: 6px;
+  border-radius: 7px;
   background:
+    radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--theme-color) 14%, transparent), transparent 32%),
     linear-gradient(145deg, color-mix(in srgb, var(--theme-color) 8%, transparent), transparent 50%),
-    #12110e;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+    #10120f;
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
 
 .screen-toolbar {
   display: flex;
   align-items: center;
   gap: 7px;
-  min-height: 34px;
+  min-height: 32px;
   padding: 0 11px;
   border-bottom: 1px solid color-mix(in srgb, var(--theme-color) 20%, rgba(224, 214, 190, 0.08));
-  background: color-mix(in srgb, var(--theme-color) 8%, rgba(240, 234, 220, 0.03));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.01)),
+    color-mix(in srgb, var(--theme-color) 8%, rgba(240, 234, 220, 0.03));
 }
 
 .screen-toolbar i {
@@ -1571,10 +1672,11 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 40px;
+  min-height: 38px;
   padding: 0 14px;
   color: rgba(240, 234, 220, 0.68);
-  background: color-mix(in srgb, var(--theme-color) 10%, #1d1b16);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--theme-color) 12%, #1d1b16), #1a1a17);
   font-size: 11px;
 }
 
@@ -1586,10 +1688,14 @@ button {
 
 .web-layout main {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 118px;
+  grid-template-columns: minmax(0, 1fr) 132px;
   gap: 12px;
   padding: 14px;
-  background: linear-gradient(145deg, #e8e1d1, color-mix(in srgb, var(--theme-color) 12%, #cfc5b0));
+  background:
+    linear-gradient(rgba(39, 36, 29, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(39, 36, 29, 0.04) 1px, transparent 1px),
+    linear-gradient(145deg, #e8e1d1, color-mix(in srgb, var(--theme-color) 12%, #cfc5b0));
+  background-size: 100% 18px, 18px 100%, auto;
 }
 
 .web-layout section {
@@ -1599,6 +1705,28 @@ button {
   border-radius: 5px;
   color: #2d2a23;
   background: rgba(255, 252, 242, 0.86);
+}
+
+.shop-hero {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 4px;
+  color: #f7f1df;
+  background:
+    linear-gradient(135deg, rgba(45, 42, 35, 0.86), rgba(45, 42, 35, 0.5)),
+    color-mix(in srgb, var(--theme-color) 22%, #2d2a23);
+}
+
+.shop-hero span {
+  color: rgba(247, 241, 223, 0.66);
+  font-size: 10px;
+}
+
+.shop-hero strong {
+  font-size: 15px;
+  line-height: 1.28;
 }
 
 .web-layout h4,
@@ -1632,10 +1760,32 @@ button {
   font-size: 12px;
 }
 
+.web-table {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1px;
+  margin-top: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(45, 42, 35, 0.12);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.web-table span {
+  padding: 6px 7px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
 .web-layout aside {
   display: grid;
   align-content: start;
   gap: 7px;
+}
+
+.web-layout aside b {
+  color: rgba(45, 42, 35, 0.74);
+  font-size: 11px;
 }
 
 .web-layout aside span {
@@ -1654,7 +1804,9 @@ button {
   gap: 7px;
   padding: 14px;
   color: #d8d2c4;
-  background: #0d0f0d;
+  background:
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--theme-color) 10%, transparent), transparent 34%),
+    #0d0f0d;
   font-family: var(--font-mono);
   font-size: 12px;
   line-height: 1.55;
@@ -1664,6 +1816,20 @@ button {
 .crypto-paper p,
 .pwn-debug p {
   margin: 0;
+}
+
+.terminal-lines p,
+.pwn-debug p {
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(224, 214, 190, 0.045);
+}
+
+.terminal-lines span {
+  color: color-mix(in srgb, var(--theme-color) 88%, #f0eadc);
+}
+
+.screen-callout {
+  color: color-mix(in srgb, var(--theme-color) 84%, #f0eadc) !important;
 }
 
 .screen-terminal .terminal-lines p:first-child {
@@ -1676,7 +1842,9 @@ button {
   grid-template-columns: 120px minmax(0, 1fr);
   gap: 12px;
   padding: 14px;
-  background: #15140f;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025), transparent),
+    #15140f;
 }
 
 .evidence-grid div,
@@ -1694,6 +1862,13 @@ button {
   color: rgba(240, 234, 220, 0.72);
   background: rgba(255, 255, 255, 0.035);
   font-size: 11px;
+}
+
+.evidence-grid span.active,
+.reverse-columns span.active {
+  border-color: color-mix(in srgb, var(--theme-color) 46%, rgba(224, 214, 190, 0.12));
+  color: #f0eadc;
+  background: color-mix(in srgb, var(--theme-color) 14%, rgba(255, 255, 255, 0.035));
 }
 
 .evidence-grid pre,
@@ -1723,6 +1898,21 @@ button {
 .crypto-paper strong {
   margin-top: 4px;
   color: color-mix(in srgb, var(--theme-color) 76%, #6f4e29);
+}
+
+.crypto-paper div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 4px;
+}
+
+.crypto-paper div span {
+  padding: 5px 7px;
+  border: 1px solid rgba(44, 41, 34, 0.14);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.38);
+  font-size: 10px;
 }
 
 .detail-next-strip strong {
@@ -1806,7 +1996,7 @@ button {
   border: 1px solid rgba(113, 132, 139, 0.25);
   color: #e4f7ff;
   background: rgba(113, 132, 139, 0.07);
-  font-family: "Cascadia Mono", Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 0 100%);
 }
