@@ -38,12 +38,12 @@ export const learningNodes: Node<LearningNodeData>[] = [
   {
     id: 'web-root',
     type: 'learning',
-    position: { x: 0, y: 0 },
+    position: { x: -720, y: 0 },
     data: {
-      title: 'Webサーバ',
+      title: 'Web画面を表示',
       category: 'web',
       level: 0,
-      summary: 'Web入門: ログイン画面の違和感。URL、通信、リソース、状態、入力、エラーに分解して見る。',
+      summary: 'まず画面を出す。そこからURL、通信、状態、入力、エラーのどれを見るか選ぶ。',
       intent: '目の前の画面を「攻め方」ではなく「観察できる境界」に分解する。',
       observe: ['URLとパス', 'HTTPの往復', 'Cookie/Session', '読み込まれるリソース', 'フォームとエラー'],
       signals: ['画面変化と通信変化が一致しない', 'ログイン前後でCookieやAPIが変わる', 'エラー文が内部構造を示唆する'],
@@ -55,7 +55,7 @@ export const learningNodes: Node<LearningNodeData>[] = [
   {
     id: 'web-url',
     type: 'learning',
-    position: { x: -520, y: -260 },
+    position: { x: -270, y: -360 },
     data: {
       title: 'URLを見る',
       category: 'web',
@@ -72,7 +72,7 @@ export const learningNodes: Node<LearningNodeData>[] = [
   {
     id: 'web-http',
     type: 'learning',
-    position: { x: -250, y: -390 },
+    position: { x: -270, y: -240 },
     data: {
       title: 'HTTPを見る',
       category: 'web',
@@ -89,7 +89,7 @@ export const learningNodes: Node<LearningNodeData>[] = [
   {
     id: 'web-header',
     type: 'learning',
-    position: { x: 80, y: -410 },
+    position: { x: -270, y: -120 },
     data: {
       title: 'Headerを見る',
       category: 'web',
@@ -106,7 +106,7 @@ export const learningNodes: Node<LearningNodeData>[] = [
   {
     id: 'web-resource',
     type: 'learning',
-    position: { x: 430, y: -240 },
+    position: { x: -270, y: 0 },
     data: {
       title: 'Resourceを見る',
       category: 'web',
@@ -123,7 +123,7 @@ export const learningNodes: Node<LearningNodeData>[] = [
   {
     id: 'web-auth',
     type: 'learning',
-    position: { x: 560, y: 90 },
+    position: { x: -270, y: 120 },
     data: {
       title: '認証フローを見る',
       category: 'web',
@@ -140,7 +140,7 @@ export const learningNodes: Node<LearningNodeData>[] = [
   {
     id: 'web-input',
     type: 'learning',
-    position: { x: 250, y: 340 },
+    position: { x: -270, y: 240 },
     data: {
       title: 'Inputを見る',
       category: 'web',
@@ -157,7 +157,7 @@ export const learningNodes: Node<LearningNodeData>[] = [
   {
     id: 'web-error',
     type: 'learning',
-    position: { x: -160, y: 360 },
+    position: { x: -270, y: 360 },
     data: {
       title: 'Errorを見る',
       category: 'web',
@@ -174,7 +174,7 @@ export const learningNodes: Node<LearningNodeData>[] = [
   {
     id: 'web-cookie',
     type: 'learning',
-    position: { x: 220, y: -720 },
+    position: { x: 230, y: -250 },
     data: {
       title: 'Cookie / Session',
       category: 'web',
@@ -191,7 +191,7 @@ export const learningNodes: Node<LearningNodeData>[] = [
   {
     id: 'web-cache',
     type: 'learning',
-    position: { x: -40, y: -720 },
+    position: { x: 230, y: -130 },
     data: {
       title: 'Cacheを見る',
       category: 'web',
@@ -208,7 +208,7 @@ export const learningNodes: Node<LearningNodeData>[] = [
   {
     id: 'web-api',
     type: 'learning',
-    position: { x: 760, y: -500 },
+    position: { x: 230, y: 10 },
     data: {
       title: 'API呼び出しを見る',
       category: 'web',
@@ -225,7 +225,7 @@ export const learningNodes: Node<LearningNodeData>[] = [
   {
     id: 'web-source',
     type: 'learning',
-    position: { x: 900, y: -180 },
+    position: { x: 230, y: 130 },
     data: {
       title: 'フロント実装の痕跡',
       category: 'web',
@@ -242,7 +242,7 @@ export const learningNodes: Node<LearningNodeData>[] = [
   {
     id: 'web-route',
     type: 'learning',
-    position: { x: -820, y: -520 },
+    position: { x: 230, y: -430 },
     data: {
       title: 'Routeを見る',
       category: 'web',
@@ -259,7 +259,7 @@ export const learningNodes: Node<LearningNodeData>[] = [
   {
     id: 'web-param',
     type: 'learning',
-    position: { x: -700, y: -110 },
+    position: { x: 230, y: -310 },
     data: {
       title: 'Parameterを見る',
       category: 'web',
@@ -279,8 +279,8 @@ export const learningNodes: Node<LearningNodeData>[] = [
       id: category.rootNodeId,
       type: 'learning',
       position: {
-        x: Math.cos((Math.PI * 2 * index) / 5 + 0.6) * 900,
-        y: Math.sin((Math.PI * 2 * index) / 5 + 0.6) * 620,
+        x: -720,
+        y: (index - 2) * 150,
       },
       data: {
         title: category.title,

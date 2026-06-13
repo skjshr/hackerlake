@@ -685,6 +685,16 @@ button {
   font-size: 10px;
 }
 
+.react-flow__node {
+  cursor: pointer;
+}
+
+.react-flow__node:hover .learning-node {
+  transform: translateY(-2px);
+  border-color: var(--node-color);
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--node-color) 28%, transparent));
+}
+
 .learning-node {
   position: relative;
   width: 226px;
@@ -699,6 +709,10 @@ button {
   color: var(--text);
   clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.32);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    filter 160ms ease;
 }
 
 .learning-node.level-0 {

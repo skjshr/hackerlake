@@ -83,13 +83,32 @@ function LearningNode({ data, selected }: NodeProps<Node<LearningNodeData>>) {
 
 const nodeTypes = { learning: LearningNode };
 
+function getFlowWindowIds(nodeId: string, categoryId: CategoryId) {
+  const rootId = getCategory(categoryId).rootNodeId;
+  const rootNode = getNode(rootId);
+  const currentNode = getNode(nodeId);
+  const incomingSources = learningEdges
+    .filter((edge) => edge.target === nodeId)
+    .map((edge) => edge.source);
+
+  return Array.from(
+    new Set([
+      rootId,
+      ...(rootNode?.data.next ?? []),
+      ...incomingSources,
+      nodeId,
+      ...(currentNode?.data.next ?? []),
+    ]),
+  );
+}
+
 export function App() {
   const [gateState, setGateState] = useState<GateState>('boot');
   const [agreed, setAgreed] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('web');
   const [selectedNodeId, setSelectedNodeId] = useState('web-root');
   const [history, setHistory] = useState<HistoryItem[]>([
-    { id: 'web-root', title: 'Webサーバ', category: 'web' },
+    { id: 'web-root', title: 'Web画面を表示', category: 'web' },
   ]);
   const [flow, setFlow] = useState<ReactFlowInstance<Node<LearningNodeData>, Edge> | null>(null);
 
@@ -111,22 +130,13 @@ export function App() {
 
   const selectedNode = getNode(selectedNodeId) ?? getNode('web-root')!;
   const activeIds = useMemo(() => {
-    const root = getCategory(selectedCategory).rootNodeId;
-    const rootNode = getNode(root);
-    const current = getNode(selectedNodeId);
-    return new Set([
-      ...categories.map((category) => category.rootNodeId),
-      root,
-      ...(rootNode?.data.next ?? []),
-      selectedNodeId,
-      ...(current?.data.next ?? []),
-    ]);
+    return new Set(getFlowWindowIds(selectedNodeId, selectedCategory));
   }, [selectedCategory, selectedNodeId]);
 
   const nodes = useMemo(
     () =>
       learningNodes
-        .filter((node) => activeIds.has(node.id) || node.data.category === selectedCategory)
+        .filter((node) => activeIds.has(node.id))
         .map((node) => ({
           ...node,
           selected: node.id === selectedNodeId,
@@ -162,7 +172,8 @@ export function App() {
         return [...current.slice(-7), next];
       });
       requestAnimationFrame(() => {
-        flow?.fitView({ nodes: [{ id: nodeId }], duration: 520, padding: 0.65 });
+        const corridor = getFlowWindowIds(nodeId, node.data.category).map((id) => ({ id }));
+        flow?.fitView({ nodes: corridor, duration: 620, padding: 0.18 });
       });
     },
     [flow],
@@ -176,16 +187,20 @@ export function App() {
   const resetView = () => {
     setSelectedCategory('web');
     focusNode('web-root');
-    requestAnimationFrame(() => flow?.fitView({ duration: 600, padding: 0.2 }));
+    requestAnimationFrame(() => {
+      const corridor = getFlowWindowIds('web-root', 'web').map((id) => ({ id }));
+      flow?.fitView({ nodes: corridor, duration: 600, padding: 0.18 });
+    });
   };
 
   useEffect(() => {
     if (!flow || gateState !== 'workspace') return;
     const timer = window.setTimeout(() => {
-      flow.fitView({ duration: 700, padding: 0.25 });
+      const corridor = getFlowWindowIds(selectedNodeId, selectedCategory).map((id) => ({ id }));
+      flow.fitView({ nodes: corridor, duration: 700, padding: 0.18 });
     }, 120);
     return () => window.clearTimeout(timer);
-  }, [flow, gateState]);
+  }, [flow, gateState, selectedCategory, selectedNodeId]);
 
   return (
     <div className="shell-root">
@@ -274,7 +289,7 @@ export function App() {
           onInit={setFlow}
           onNodeClick={(_, node) => focusNode(node.id)}
           fitView
-          minZoom={0.35}
+          minZoom={0.45}
           maxZoom={1.6}
         >
           <Background color="#27405e" gap={28} size={1} />
