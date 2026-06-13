@@ -1,9 +1,7 @@
 :root {
   color: #f3f5ef;
   background: #040608;
-  font-family:
-    "BIZ UDPGothic", "Yu Gothic UI", "Yu Gothic", Meiryo, "Noto Sans JP", system-ui,
-    sans-serif;
+  font-family: var(--font-ui);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -19,6 +17,9 @@
   --amber: #f3b640;
   --cyan: #68d8ff;
   --red: #ff4f57;
+  --font-ui: Inter, "Helvetica Neue", Arial, "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+  --font-display: Georgia, "Times New Roman", "Yu Mincho", "Hiragino Mincho ProN", serif;
+  --font-mono: "Cascadia Mono", Consolas, monospace;
 }
 
 * {
@@ -168,7 +169,7 @@ button {
 .boot-frame h1 {
   margin: 0;
   color: var(--text);
-  font-family: Bahnschrift, "Arial Narrow", "Yu Gothic UI", sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(42px, 8vw, 104px);
   line-height: 0.9;
   text-align: center;
@@ -246,7 +247,7 @@ button {
   margin: 16px 0 14px;
   font-size: clamp(32px, 6vw, 58px);
   line-height: 1.04;
-  font-family: Bahnschrift, "Yu Gothic UI", sans-serif;
+  font-family: var(--font-display);
 }
 
 .notice-shell p {
@@ -401,7 +402,7 @@ button {
 
 .brand strong {
   display: block;
-  font-family: Bahnschrift, "Yu Gothic UI", sans-serif;
+  font-family: var(--font-display);
   font-size: 17px;
 }
 
@@ -560,7 +561,7 @@ button {
 }
 
 .category-button strong {
-  font-family: Bahnschrift, "Yu Gothic UI", sans-serif;
+  font-family: var(--font-display);
   font-size: 17px;
 }
 
@@ -600,7 +601,7 @@ button {
 
 .stage-header h1 {
   margin: 4px 0 0;
-  font-family: Bahnschrift, "Yu Gothic UI", sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(31px, 3.6vw, 58px);
   line-height: 0.98;
   text-shadow: 0 0 28px rgba(42, 255, 190, 0.18);
@@ -695,11 +696,21 @@ button {
   filter: drop-shadow(0 0 18px color-mix(in srgb, var(--node-color) 28%, transparent));
 }
 
+.react-flow__node.is-context-node .learning-node {
+  opacity: 0.48;
+  filter: blur(0.7px) saturate(0.72);
+}
+
+.react-flow__node.is-context-node:hover .learning-node {
+  opacity: 0.86;
+  filter: blur(0) drop-shadow(0 0 14px color-mix(in srgb, var(--node-color) 18%, transparent));
+}
+
 .learning-node {
   position: relative;
-  width: 226px;
-  min-height: 124px;
-  padding: 13px 14px;
+  width: 196px;
+  min-height: 76px;
+  padding: 12px 14px;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--node-color) 52%, rgba(213, 255, 244, 0.16));
   background:
@@ -716,15 +727,18 @@ button {
 }
 
 .learning-node.level-0 {
-  width: 274px;
-  min-height: 150px;
+  width: 230px;
+  min-height: 92px;
 }
 
 .learning-node.selected {
+  width: 346px;
+  min-height: 196px;
   border-color: var(--node-color);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--node-color) 82%, white),
     0 0 38px color-mix(in srgb, var(--node-color) 42%, transparent);
+  z-index: 5;
 }
 
 .node-glow {
@@ -795,16 +809,37 @@ button {
 
 .learning-node strong {
   display: block;
-  margin: 10px 0 7px;
-  font-family: Bahnschrift, "Yu Gothic UI", sans-serif;
-  font-size: 17px;
+  margin: 9px 0 0;
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1.08;
 }
 
 .learning-node p {
+  display: none;
   margin: 0;
   color: #c2cbc5;
   font-size: 12px;
   line-height: 1.55;
+}
+
+.learning-node.selected p {
+  display: block;
+  margin-top: 14px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.node-expand-hint {
+  display: none;
+  margin-top: 16px;
+  color: var(--amber);
+  font-family: var(--font-ui);
+  font-size: 12px;
+}
+
+.learning-node.selected .node-expand-hint {
+  display: inline-flex;
 }
 
 .detail-panel {
@@ -830,8 +865,8 @@ button {
 
 .detail-panel h2 {
   margin: 12px 0 10px;
-  font-family: Bahnschrift, "Yu Gothic UI", sans-serif;
-  font-size: 34px;
+  font-family: var(--font-display);
+  font-size: 38px;
   line-height: 1.05;
 }
 

@@ -77,25 +77,31 @@ function LearningNode({ data, selected }: NodeProps<Node<LearningNodeData>>) {
       </div>
       <strong>{data.title}</strong>
       <p>{data.summary}</p>
+      <span className="node-expand-hint">詳細へ</span>
     </div>
   );
 }
 
 const nodeTypes = { learning: LearningNode };
 
-function getFlowWindowIds(nodeId: string, categoryId: CategoryId) {
+function getFlowWindowIds(nodeId: string, categoryId: CategoryId, previousId?: string) {
   const rootId = getCategory(categoryId).rootNodeId;
   const rootNode = getNode(rootId);
   const currentNode = getNode(nodeId);
-  const incomingSources = learningEdges
-    .filter((edge) => edge.target === nodeId)
-    .map((edge) => edge.source);
+
+  if (nodeId === rootId) {
+    return Array.from(new Set([rootId, ...(rootNode?.data.next ?? [])]));
+  }
+
+  const previousIsConnected = previousId
+    ? learningEdges.some((edge) => edge.source === previousId && edge.target === nodeId)
+    : false;
+  const pathSource = previousIsConnected && previousId ? previousId : rootId;
 
   return Array.from(
     new Set([
       rootId,
-      ...(rootNode?.data.next ?? []),
-      ...incomingSources,
+      pathSource,
       nodeId,
       ...(currentNode?.data.next ?? []),
     ]),
@@ -129,9 +135,12 @@ export function App() {
   }, [agreed, gateState]);
 
   const selectedNode = getNode(selectedNodeId) ?? getNode('web-root')!;
+  const previousNodeId = history.length >= 2 ? history[history.length - 2].id : undefined;
+  const selectedRootId = getCategory(selectedCategory).rootNodeId;
+  const nextChoiceIds = useMemo(() => new Set(selectedNode.data.next), [selectedNode.data.next]);
   const activeIds = useMemo(() => {
-    return new Set(getFlowWindowIds(selectedNodeId, selectedCategory));
-  }, [selectedCategory, selectedNodeId]);
+    return new Set(getFlowWindowIds(selectedNodeId, selectedCategory, previousNodeId));
+  }, [previousNodeId, selectedCategory, selectedNodeId]);
 
   const nodes = useMemo(
     () =>
@@ -141,9 +150,14 @@ export function App() {
           ...node,
           selected: node.id === selectedNodeId,
           data: node.data,
-          className: activeIds.has(node.id) ? 'is-active' : 'is-dimmed',
+          className:
+            node.id === selectedNodeId
+              ? 'is-focus-node'
+              : selectedNodeId === selectedRootId || nextChoiceIds.has(node.id)
+                ? 'is-choice-node'
+                : 'is-context-node',
         })),
-    [activeIds, selectedCategory, selectedNodeId],
+    [activeIds, nextChoiceIds, selectedCategory, selectedNodeId, selectedRootId],
   );
 
   const edges = useMemo(
@@ -172,11 +186,13 @@ export function App() {
         return [...current.slice(-7), next];
       });
       requestAnimationFrame(() => {
-        const corridor = getFlowWindowIds(nodeId, node.data.category).map((id) => ({ id }));
-        flow?.fitView({ nodes: corridor, duration: 620, padding: 0.18 });
+        const corridor = getFlowWindowIds(nodeId, node.data.category, selectedNodeId).map((id) => ({
+          id,
+        }));
+        flow?.fitView({ nodes: corridor, duration: 720, padding: 0.2 });
       });
     },
-    [flow],
+    [flow, selectedNodeId],
   );
 
   const focusCategory = (categoryId: CategoryId) => {
@@ -308,13 +324,13 @@ export function App() {
           >
             <div className="detail-kicker">
               <TerminalSquare size={16} />
-              <span>読み筋</span>
+              <span>観察メモ</span>
             </div>
             <h2>{selectedNode.data.title}</h2>
             <p className="lead">{selectedNode.data.intent}</p>
 
             <div className="detail-block">
-              <h3>匂いが出る場所</h3>
+              <h3>確認ポイント</h3>
               <ul>
                 {selectedNode.data.signals.map((item) => (
                   <li key={item}>{item}</li>
@@ -332,7 +348,7 @@ export function App() {
             </div>
 
             <div className="detail-block">
-              <h3>どう読むか</h3>
+              <h3>詳細な説明</h3>
               <p>{selectedNode.data.details}</p>
             </div>
 
