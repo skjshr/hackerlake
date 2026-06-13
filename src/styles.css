@@ -1,20 +1,20 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+JP:wght@400;500;600;700;800&family=Shippori+Mincho:wght@500;600;700&display=swap");
 
 :root {
-  color: #2f2a22;
-  background: #f7f1e8;
+  color: #f0eadc;
+  background: #050607;
   font-family: var(--font-ui);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  --ink: #2f2a22;
-  --carbon: #f7f1e8;
-  --panel: rgba(255, 252, 246, 0.9);
-  --panel-strong: rgba(255, 252, 246, 0.98);
-  --line: rgba(58, 48, 36, 0.14);
+  --ink: #f0eadc;
+  --carbon: #080a0b;
+  --panel: rgba(12, 15, 15, 0.88);
+  --panel-strong: rgba(17, 20, 19, 0.96);
+  --line: rgba(224, 214, 190, 0.14);
   --line-hot: rgba(138, 146, 121, 0.58);
-  --text: #2f2a22;
-  --muted: #746b5f;
+  --text: #f0eadc;
+  --muted: #9e998b;
   --green: #8a9279;
   --amber: #b48957;
   --cyan: #7d8f90;
@@ -2171,24 +2171,27 @@ button {
   line-height: 1.35;
 }
 
-/* Claude-docs inspired reading skin for the learning app */
+/* Dark reading skin for the learning app */
 .shell-root {
   color: var(--ink);
   background:
-    linear-gradient(90deg, rgba(58, 48, 36, 0.035) 1px, transparent 1px),
-    linear-gradient(180deg, #fbf7ef, #f4eadf);
-  background-size: 72px 100%, auto;
+    radial-gradient(circle at 76% 18%, rgba(62, 90, 90, 0.1), transparent 30%),
+    radial-gradient(circle at 16% 82%, rgba(180, 137, 87, 0.055), transparent 28%),
+    linear-gradient(90deg, rgba(224, 214, 190, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, #060809, #0a0d0e 48%, #050506);
+  background-size: auto, auto, 72px 100%, auto;
 }
 
 .ambient-grid,
 .signal-field {
-  display: none;
+  display: block;
 }
 
 .category-gate {
   background:
-    radial-gradient(circle at 84% 12%, rgba(138, 146, 121, 0.12), transparent 28%),
-    linear-gradient(180deg, #fbf7ef, #f4eadf);
+    radial-gradient(circle at 84% 12%, rgba(138, 146, 121, 0.1), transparent 28%),
+    radial-gradient(circle at 18% 82%, rgba(180, 137, 87, 0.06), transparent 28%),
+    linear-gradient(180deg, rgba(4, 6, 8, 0.78), rgba(3, 5, 6, 0.98));
 }
 
 .category-heading h1,
@@ -2235,7 +2238,7 @@ button {
 }
 
 .category-heading h1 {
-  color: #342e26;
+  color: #f0eadc;
   font-size: clamp(38px, 5vw, 68px);
 }
 
@@ -2244,34 +2247,34 @@ button {
 }
 
 .category-card {
-  border: 1px solid rgba(58, 48, 36, 0.12);
+  border: 1px solid rgba(224, 214, 190, 0.12);
   border-left: 4px solid var(--node-color);
   border-radius: 8px;
-  background: rgba(255, 252, 246, 0.92);
-  box-shadow: none;
+  background: rgba(9, 12, 13, 0.86);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22);
 }
 
 .category-main {
   min-height: 104px;
   padding: 17px 18px 14px;
-  color: #302a22;
+  color: #f0eadc;
   background: transparent;
 }
 
 .category-main:hover {
-  background: color-mix(in srgb, var(--node-color) 5%, transparent);
-  filter: none;
+  background: color-mix(in srgb, var(--node-color) 9%, transparent);
+  filter: drop-shadow(0 0 16px color-mix(in srgb, var(--node-color) 20%, transparent));
 }
 
 .category-main small {
-  color: color-mix(in srgb, var(--node-color) 72%, #5a5045);
+  color: color-mix(in srgb, var(--node-color) 76%, #f0eadc);
   font-family: var(--font-display);
   font-size: 10px;
   letter-spacing: 0;
 }
 
 .category-main strong {
-  color: #2d271f;
+  color: #f5f0e3;
   font-size: 25px;
 }
 
@@ -2283,27 +2286,27 @@ button {
   min-height: auto;
   padding: 0;
   border: 0;
-  color: #6f675d;
+  color: rgba(236, 234, 222, 0.64);
   background: transparent;
   font-size: 12px;
 }
 
 .category-card details {
-  border-top: 1px solid rgba(58, 48, 36, 0.1);
+  border-top: 1px solid rgba(224, 214, 190, 0.1);
   padding: 0 18px 14px;
 }
 
 .category-card summary {
-  color: #3a3128;
+  color: rgba(240, 234, 220, 0.86);
 }
 
 .category-card p {
-  color: #665d52;
+  color: rgba(236, 234, 222, 0.7);
 }
 
 .app-shell {
   grid-template-columns: minmax(300px, 40vw) minmax(560px, 60vw);
-  background: #fbf7ef;
+  background: #07090a;
 }
 
 .app-shell.detail-dominant {
@@ -2311,8 +2314,8 @@ button {
 }
 
 .topbar {
-  border-bottom: 1px solid rgba(58, 48, 36, 0.12);
-  background: rgba(255, 252, 246, 0.86);
+  border-bottom: 1px solid rgba(224, 214, 190, 0.12);
+  background: rgba(5, 7, 8, 0.84);
   backdrop-filter: blur(16px);
 }
 
@@ -2323,41 +2326,42 @@ button {
 }
 
 .brand strong {
-  color: #2f2a22;
+  color: #f0eadc;
 }
 
 .phase-track span {
-  border-color: rgba(58, 48, 36, 0.12);
-  color: #796f63;
-  background: rgba(255, 255, 255, 0.42);
+  border-color: rgba(224, 214, 190, 0.1);
+  color: rgba(205, 198, 181, 0.42);
+  background: rgba(16, 18, 17, 0.7);
 }
 
 .phase-track span.active {
-  color: #2f2a22;
-  background: color-mix(in srgb, var(--theme-color) 14%, #fffaf2);
+  color: #f0eadc;
+  background: color-mix(in srgb, var(--theme-color) 16%, #111312);
 }
 
 .genre-button {
-  border-color: rgba(58, 48, 36, 0.14);
-  color: #3b342b;
-  background: #fffaf2;
+  border-color: rgba(224, 214, 190, 0.14);
+  color: rgba(240, 234, 220, 0.82);
+  background: rgba(255, 255, 255, 0.028);
 }
 
 .map-stage {
-  border-right: 1px solid rgba(58, 48, 36, 0.1);
+  border-right: 1px solid rgba(224, 214, 190, 0.08);
   background:
-    linear-gradient(rgba(58, 48, 36, 0.04) 1px, transparent 1px),
-    #f7efe5;
+    linear-gradient(rgba(224, 214, 190, 0.035) 1px, transparent 1px),
+    radial-gradient(circle at 52% 36%, color-mix(in srgb, var(--theme-color) 6%, transparent), transparent 36%),
+    #080a0b;
   background-size: 100% 34px;
 }
 
 .stage-header span,
 .detail-heading span {
-  color: color-mix(in srgb, var(--theme-color) 72%, #6e6256);
+  color: color-mix(in srgb, var(--theme-color) 78%, #f0eadc);
 }
 
 .stage-header h1 {
-  color: #2f2a22;
+  color: #f0eadc;
 }
 
 .connection-current,
@@ -2367,9 +2371,9 @@ button {
 .detail-explain-grid,
 .note-template,
 .screen-mock {
-  border: 1px solid rgba(58, 48, 36, 0.12);
+  border: 1px solid rgba(224, 214, 190, 0.12);
   border-radius: 8px;
-  background: rgba(255, 252, 246, 0.9);
+  background: rgba(12, 15, 15, 0.88);
   box-shadow: none;
 }
 
@@ -2385,22 +2389,22 @@ button {
 .connection-current span,
 .connection-next > span,
 .detail-next-strip > span {
-  color: #7c7165;
+  color: rgba(236, 234, 222, 0.58);
 }
 
 .connection-current strong,
 .connection-next button,
 .detail-next-strip strong {
-  color: #302a22;
+  color: #f0eadc;
 }
 
 .connection-next button,
 .detail-next-strip button,
 .branch-cards button,
 .observe-list > li {
-  border-color: rgba(58, 48, 36, 0.1);
-  background: #fffaf2;
-  color: #302a22;
+  border-color: rgba(224, 214, 190, 0.1);
+  background: rgba(255, 255, 255, 0.024);
+  color: #f0eadc;
 }
 
 .react-flow {
@@ -2408,40 +2412,40 @@ button {
 }
 
 .react-flow__node .learning-node {
-  border: 1px solid rgba(58, 48, 36, 0.12);
+  border: 1px solid rgba(224, 214, 190, 0.12);
   border-left: 4px solid var(--node-color);
   border-radius: 8px;
-  background: #fffaf2;
+  background: rgba(13, 16, 16, 0.94);
   box-shadow: none;
 }
 
 .learning-node span {
-  color: #7d7368;
+  color: color-mix(in srgb, var(--node-color) 72%, #d7d0c0);
 }
 
 .learning-node strong {
-  color: #302a22;
+  color: #f0eadc;
 }
 
 .react-flow__edge-path {
-  stroke: rgba(58, 48, 36, 0.18);
+  stroke: rgba(224, 214, 190, 0.14);
 }
 
 .detail-panel {
   border-left: 0;
-  background: #fbf7ef;
+  background: #080a0b;
 }
 
 .detail-heading {
-  border-bottom: 1px solid rgba(58, 48, 36, 0.12);
+  border-bottom: 1px solid rgba(224, 214, 190, 0.12);
 }
 
 .detail-panel h2 {
-  color: #2f2a22;
+  color: #f0eadc;
 }
 
 .lead {
-  color: #5a5147;
+  color: #d6dcd6;
 }
 
 .learning-brief {
@@ -2449,7 +2453,7 @@ button {
 }
 
 .learning-brief h3 {
-  color: #2f2a22;
+  color: #f0eadc;
   font-size: 15px;
 }
 
@@ -2461,7 +2465,7 @@ button {
 .detail-explain-grid li,
 .note-template p,
 .observe-list p {
-  color: #50483f;
+  color: #c4cbc5;
 }
 
 .takeaway-list {
@@ -2472,15 +2476,15 @@ button {
 
 .takeaway-list span {
   padding-left: 12px;
-  border-left: 2px solid color-mix(in srgb, var(--theme-color) 52%, rgba(58, 48, 36, 0.18));
-  color: #3d352d;
+  border-left: 2px solid color-mix(in srgb, var(--theme-color) 52%, rgba(224, 214, 190, 0.18));
+  color: #e1ddd0;
   font-family: var(--font-display);
   font-size: 12px;
   line-height: 1.5;
 }
 
 .detail-block {
-  border-top: 1px solid rgba(58, 48, 36, 0.12);
+  border-top: 1px solid rgba(224, 214, 190, 0.12);
 }
 
 .detail-block summary,
@@ -2489,7 +2493,7 @@ button {
 .note-template summary,
 .screenshot-block summary,
 .inline-help summary {
-  color: #302a22;
+  color: #f0eadc;
   font-family: var(--font-display);
   font-size: 14px;
 }
@@ -2500,7 +2504,7 @@ button {
 }
 
 .summary-label::first-letter {
-  color: color-mix(in srgb, var(--theme-color, var(--node-color)) 72%, #2f2a22);
+  color: color-mix(in srgb, var(--theme-color, var(--node-color)) 78%, #f0eadc);
   font-size: 1.5em;
   font-weight: 760;
   line-height: 0.8;
@@ -2521,7 +2525,7 @@ button {
 .note-template[open],
 .screenshot-block[open],
 .category-card details[open] {
-  background: color-mix(in srgb, var(--theme-color) 5%, #fffaf2);
+  background: color-mix(in srgb, var(--theme-color) 7%, #101211);
 }
 
 .doc-split {
@@ -2531,23 +2535,23 @@ button {
 
 .doc-split > div {
   padding: 11px 12px;
-  border: 1px solid rgba(58, 48, 36, 0.1);
+  border: 1px solid rgba(224, 214, 190, 0.1);
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.46);
+  background: rgba(255, 255, 255, 0.028);
 }
 
 .doc-split strong,
 .observe-list strong,
 .branch-cards strong {
-  color: #302a22;
+  color: #f0eadc;
   font-family: var(--font-display);
 }
 
 .risk-note,
 .safety-note {
   border-left: 3px solid color-mix(in srgb, var(--theme-color) 70%, #b48957);
-  color: #5b5146 !important;
-  background: color-mix(in srgb, var(--theme-color) 7%, #fffaf2);
+  color: rgba(236, 234, 222, 0.72) !important;
+  background: color-mix(in srgb, var(--theme-color) 7%, #101211);
 }
 
 .decision-list {
@@ -2567,7 +2571,7 @@ button {
   width: 100%;
   aspect-ratio: 16 / 10;
   object-fit: cover;
-  background: #efe6da;
+  background: #0c0f10;
 }
 
 .screen-mock figcaption {
@@ -2575,14 +2579,14 @@ button {
   gap: 8px;
   align-items: baseline;
   padding: 10px 12px;
-  color: #5f554b;
+  color: rgba(236, 234, 222, 0.66);
   font-family: var(--font-body);
   font-size: 12px;
   line-height: 1.55;
 }
 
 .screen-mock figcaption strong {
-  color: color-mix(in srgb, var(--theme-color) 74%, #302a22);
+  color: color-mix(in srgb, var(--theme-color) 76%, #f0eadc);
   font-family: var(--font-display);
 }
 
