@@ -3,3 +3,10 @@
 ~$*.xlsx
 desktop.ini
 Thumbs.db
+
+node_modules/
+dist/
+qa/
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
