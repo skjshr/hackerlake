@@ -18,19 +18,58 @@ import {
   getNode,
   learningEdges,
   learningNodes,
+  type AttackPhase,
   type CategoryId,
   type LearningNodeData,
 } from './data/knowledge';
 
 type GateState = 'notice' | 'category' | 'workspace';
 
-const phaseGuides = {
-  偵察: '対象を壊さず眺めて、何が入力で、何が出力で、どこまで見てよいかを決める段階。',
-  列挙: '見つけた入口を種類別に並べ、次に深く見る候補を選べる状態にする段階。',
-  侵入: '突破手順ではなく、入口仮説が本当に成り立つかを許可範囲で検証する段階。',
-  権限昇格: 'より強い権限、より深い条件、より大きな影響へつながる境界を読む段階。',
-  '維持・痕跡消去': '隠蔽手順ではなく、何が残り、どう記録し、どう防御・復習へ戻すかを見る段階。',
-} as const;
+const phaseUi: Record<AttackPhase, { code: string; label: string; guide: string }> = {
+  偵察: {
+    code: 'OBSERVE',
+    label: '問題文を読む',
+    guide: '対象を壊さず眺めて、何が入力で、何が出力で、どこまで見てよいかを決める。',
+  },
+  列挙: {
+    code: 'LIST',
+    label: '観察する',
+    guide: '見つけた入口を種類別に並べ、次に深く見る候補を選べる状態にする。',
+  },
+  侵入: {
+    code: 'CHECK',
+    label: '仮説を確認',
+    guide: '突破手順ではなく、入口仮説が本当に成り立つかを許可範囲で小さく確認する。',
+  },
+  権限昇格: {
+    code: 'IMPACT',
+    label: '差分を見る',
+    guide: '権限、条件、影響範囲の差を読み、何ができる状態に変わるかを理解する。',
+  },
+  '維持・痕跡消去': {
+    code: 'LOG',
+    label: '記録する',
+    guide: '隠蔽手順ではなく、何が残り、どう記録し、どう防御・復習へ戻すかを見る。',
+  },
+};
+
+function getConnectionKind(current: LearningNodeData, target: LearningNodeData) {
+  if (target.level > current.level) return '次の段階';
+  if (target.level < current.level) return '前提確認';
+  return '同じ段階';
+}
+
+function getMiniExample(node: LearningNodeData) {
+  const [first, second] = node.observe;
+  if (!first) return `${node.title}では、まず対象を一つだけ選び、見えた事実を短く記録する。`;
+  const next = second ? `次に「${second.label}」も見て、同じ説明でつながるか確認する。` : '次に、同じ観察をもう一度別の対象で確認する。';
+  return `例: 「${first.label}」を見るときは、${first.how} 見えた内容を「${first.what}」としてメモする。${next}`;
+}
+
+function getDecisionText(node: LearningNodeData) {
+  const labels = node.observe.slice(0, 3).map((item) => `「${item.label}」`).join('、');
+  return `${labels || '観察項目'}を自分の言葉で説明できたら次へ進む。説明できない項目があるなら、前のノードへ戻って問題文、画面、ログ、配布物のどれを見落としたか確認する。`;
+}
 
 function LearningNode({ data }: NodeProps<Node<LearningNodeData>>) {
   const category = getCategory(data.category);
@@ -42,7 +81,7 @@ function LearningNode({ data }: NodeProps<Node<LearningNodeData>>) {
     >
       <Handle className="node-handle node-handle-target" position={Position.Left} type="target" />
       <Handle className="node-handle node-handle-source" position={Position.Right} type="source" />
-      <span>{data.phase}</span>
+      <span>{phaseUi[data.phase].label}</span>
       <strong>{data.title}</strong>
     </div>
   );
@@ -148,6 +187,15 @@ export function App() {
         .filter((node): node is Node<LearningNodeData> => Boolean(node)),
     [displayedNextIds],
   );
+  const connectionItems = useMemo(
+    () =>
+      connectionChoices.map((node) => ({
+        node,
+        kind: getConnectionKind(selectedNode.data, node.data),
+      })),
+    [connectionChoices, selectedNode.data],
+  );
+  const firstSteps = selectedNode.data.observe.slice(0, 3);
 
   const focusNode = useCallback(
     (nodeId: string) => {
@@ -244,7 +292,8 @@ export function App() {
         <div className="phase-track" aria-label="hacking phases">
           {attackPhases.map((phase) => (
             <span key={phase} className={phase === activePhase ? 'active' : ''}>
-              {phase}
+              <em>{phaseUi[phase].code}</em>
+              {phaseUi[phase].label}
             </span>
           ))}
         </div>
@@ -256,7 +305,7 @@ export function App() {
       <main className="map-stage">
         <div className="stage-header">
           <div>
-            <span>{selectedCategoryData.title} / {activePhase}</span>
+            <span>{selectedCategoryData.title} / {phaseUi[activePhase].label}</span>
             <h1>{selectedNode.data.title}</h1>
           </div>
         </div>
@@ -268,9 +317,9 @@ export function App() {
           <div className="connection-next">
             <span>次に進める</span>
             <div>
-              {connectionChoices.map((node) => (
+              {connectionItems.map(({ node, kind }) => (
                 <button key={node.id} onClick={() => focusNode(node.id)} type="button">
-                  <em>{node.data.phase}</em>
+                  <em>{kind}</em>
                   {node.data.title}
                 </button>
               ))}
@@ -306,27 +355,20 @@ export function App() {
             transition={{ duration: 0.18 }}
           >
             <div className="detail-heading">
-              <span>{selectedCategoryData.title} / {activePhase}</span>
+              <span>{selectedCategoryData.title} / {phaseUi[activePhase].label}</span>
               <h2>{selectedNode.data.title}</h2>
               <p className="lead">{selectedNode.data.summary}</p>
             </div>
 
             <section className="learning-brief">
-              <h3>この段階で判断すること</h3>
-              <p>{phaseGuides[activePhase]}</p>
+              <h3>ゴール</h3>
+              <p>{phaseUi[activePhase].guide}</p>
               <p>{selectedNode.data.intent}</p>
-            </section>
-
-            <section className="detail-next-strip" aria-label="next learning nodes">
-              <span>次に進める</span>
-              <div>
-                {connectionChoices.map((node) => (
-                  <button key={node.id} onClick={() => focusNode(node.id)} type="button">
-                    <em>{node.data.phase}</em>
-                    <strong>{node.data.title}</strong>
-                  </button>
+              <ol>
+                {firstSteps.map((item) => (
+                  <li key={item.label}>{item.how}</li>
                 ))}
-              </div>
+              </ol>
             </section>
 
             <details className="detail-block" open>
@@ -354,6 +396,29 @@ export function App() {
                 ))}
               </ol>
             </details>
+
+            <section className="detail-explain-grid">
+              <div>
+                <h3>ミニ例</h3>
+                <p>{getMiniExample(selectedNode.data)}</p>
+              </div>
+              <div>
+                <h3>判断基準</h3>
+                <p>{getDecisionText(selectedNode.data)}</p>
+              </div>
+            </section>
+
+            <section className="detail-next-strip" aria-label="next learning nodes">
+              <span>おすすめの次</span>
+              <div>
+                {connectionItems.map(({ node, kind }) => (
+                  <button key={node.id} onClick={() => focusNode(node.id)} type="button">
+                    <em>{kind}</em>
+                    <strong>{node.data.title}</strong>
+                  </button>
+                ))}
+              </div>
+            </section>
 
             {selectedNode.data.branches.length > 0 && (
               <details className="detail-block">
@@ -384,19 +449,13 @@ export function App() {
               <p className="safety-note">{selectedNode.data.safety}</p>
             </details>
 
-            <details className="detail-block" open>
-              <summary>次に見る</summary>
-              <div className="next-actions">
-                {connectionChoices.map((node) => {
-                  return (
-                    <button key={node.id} onClick={() => focusNode(node.id)} type="button">
-                      <span>{node.data.phase}</span>
-                      <strong>{node.data.title}</strong>
-                    </button>
-                  );
-                })}
-              </div>
-            </details>
+            <section className="note-template">
+              <h3>観察ログ</h3>
+              <p>見たもの: ______</p>
+              <p>分かったこと: ______</p>
+              <p>まだ不明なこと: ______</p>
+              <p>次に確認すること: ______</p>
+            </section>
           </motion.section>
       </aside>
           </motion.div>
