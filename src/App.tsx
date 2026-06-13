@@ -10,12 +10,7 @@ import {
   type ReactFlowInstance,
 } from '@xyflow/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Check,
-  Radar,
-  Siren,
-  TerminalSquare,
-} from 'lucide-react';
+import { Check, Radar, TerminalSquare } from 'lucide-react';
 import {
   getCategory,
   getNode,
@@ -37,16 +32,7 @@ function LearningNode({ data, selected }: NodeProps<Node<LearningNodeData>>) {
     >
       <Handle className="node-handle node-handle-target" position={Position.Left} type="target" />
       <Handle className="node-handle node-handle-source" position={Position.Right} type="source" />
-      <div className="node-glow" />
-      <div className="node-corner node-corner-a" />
-      <div className="node-corner node-corner-b" />
-      <div className="node-topline">
-        <span>{category.title.toUpperCase()}</span>
-        <span>D{data.level}</span>
-      </div>
       <strong>{data.title}</strong>
-      <p>{data.summary}</p>
-      <span className="node-expand-hint">詳細へ</span>
     </div>
   );
 }
@@ -219,7 +205,7 @@ export function App() {
       <main className="map-stage">
         <div className="stage-header">
           <div>
-            <span className="tiny-label">現在地: Web / 観察 / Step {selectedNode.data.level}</span>
+            <span className="tiny-label">偵察</span>
             <h1>{selectedNode.data.title}</h1>
           </div>
         </div>
@@ -233,7 +219,7 @@ export function App() {
           minZoom={0.45}
           maxZoom={1.6}
         >
-          <Background color="#27405e" gap={28} size={1} />
+          <Background color="#1b2a31" gap={34} size={0.6} />
         </ReactFlow>
       </main>
 
@@ -315,21 +301,6 @@ function BootScreen() {
           <span />
           <span />
         </div>
-        <div className="boot-status boot-status-left">
-          <span>NOW LOADING</span>
-          <strong>HACKERLAKE</strong>
-          <small>TRAINING MODE</small>
-        </div>
-        <div className="boot-status boot-status-right">
-          <span>SYSTEM</span>
-          <strong>LOCAL</strong>
-          <small>NO NETWORK ACTION</small>
-        </div>
-        <div className="boot-code">
-          <span>BOOTING</span>
-          <span>LOADING DATA</span>
-          <span>CHECKING NOTICE</span>
-        </div>
         <motion.h1
           initial={{ opacity: 0, letterSpacing: '0.18em', y: 12 }}
           animate={{ opacity: 1, letterSpacing: '0.05em', y: 0 }}
@@ -344,7 +315,6 @@ function BootScreen() {
         >
           by skjshr
         </motion.p>
-        <div className="boot-coordinates">NOTICE REQUIRED / LOADING</div>
         <div className="boot-loader" aria-label="loading">
           <span />
         </div>
@@ -369,20 +339,11 @@ function NoticeGate({ agreed, onAgreedChange, onEnter }: NoticeGateProps) {
       transition={{ duration: 0.38 }}
     >
       <div className="notice-shell">
-        <div className="notice-status">
-          <Siren size={18} />
-          <span>CAUTION / RULES OF ENGAGEMENT</span>
-        </div>
         <h1>CAUTION</h1>
         <h2>許可のない対象には触れない</h2>
         <p>
           HackerLakeは、攻撃手順を配るサイトではありません。CTFと自分の検証環境で、状況を読み、次の一手を選ぶための訓練用UIです。
         </p>
-        <div className="notice-directives" aria-label="directives">
-          <span>AUTHORIZED AREA ONLY</span>
-          <span>NO REAL TARGETS</span>
-          <span>TRAINING USE</span>
-        </div>
         <div className="notice-list">
           <span>許可されていない対象については、スキャンだけでも法律や規約に抵触する可能性があります。</span>
           <span>不正アクセス、侵入、実サービスへの試行を推奨するものではありません。</span>
@@ -401,7 +362,6 @@ function NoticeGate({ agreed, onAgreedChange, onEnter }: NoticeGateProps) {
           <span>ENTER</span>
           <TerminalSquare size={18} />
         </button>
-        <small>checkbox + ENTER key</small>
       </div>
     </motion.section>
   );
