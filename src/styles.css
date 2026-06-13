@@ -1,24 +1,24 @@
 :root {
-  color: #ebe6d8;
-  background: #050504;
+  color: #f0eadc;
+  background: #070706;
   font-family: var(--font-ui);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  --ink: #050504;
-  --carbon: #11110e;
-  --panel: rgba(17, 18, 15, 0.86);
-  --panel-strong: rgba(22, 22, 18, 0.96);
-  --line: rgba(224, 214, 190, 0.14);
-  --line-hot: rgba(142, 157, 126, 0.54);
-  --text: #ebe6d8;
-  --muted: #9d9789;
-  --green: #8e9d7e;
-  --amber: #ae8752;
-  --cyan: #71848b;
-  --red: #9a4f46;
-  --font-ui: "Inter", "Helvetica Neue", Arial, "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
-  --font-display: "Times New Roman", "Yu Mincho", "Hiragino Mincho ProN", serif;
+  --ink: #070706;
+  --carbon: #12110e;
+  --panel: rgba(19, 18, 14, 0.9);
+  --panel-strong: rgba(26, 24, 19, 0.97);
+  --line: rgba(224, 214, 190, 0.16);
+  --line-hot: rgba(138, 146, 121, 0.58);
+  --text: #f0eadc;
+  --muted: #aaa291;
+  --green: #8a9279;
+  --amber: #b48957;
+  --cyan: #7d8f90;
+  --red: #9b4b43;
+  --font-ui: "Segoe UI Variable Text", "Segoe UI", "Helvetica Neue", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+  --font-display: Georgia, "Yu Mincho", "Hiragino Mincho ProN", serif;
   --font-mono: "Cascadia Mono", Consolas, monospace;
 }
 
@@ -31,6 +31,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   overflow: hidden;
+  letter-spacing: 0;
 }
 
 button {
@@ -808,15 +809,6 @@ button {
     opacity 180ms ease;
 }
 
-.phase-track span em {
-  display: block;
-  color: rgba(174, 135, 82, 0.58);
-  font-size: 9px;
-  font-style: normal;
-  font-weight: 760;
-  line-height: 1;
-}
-
 .phase-track span.active {
   transform: scale(1.04);
   border-color: rgba(142, 157, 126, 0.62);
@@ -1054,6 +1046,11 @@ button {
   filter: grayscale(0.9) blur(1.2px) saturate(0.35);
 }
 
+.react-flow__node.is-choice-node .learning-node {
+  opacity: 0.94;
+  filter: none;
+}
+
 .learning-node {
   position: relative;
   width: 176px;
@@ -1084,34 +1081,6 @@ button {
   box-shadow: inset 4px 0 0 var(--node-color);
   z-index: 5;
   animation: nodeAcquire 160ms ease-out;
-}
-
-.app-shell.has-selected-focus .react-flow__node.is-choice-node:not(.selected) .learning-node {
-  opacity: 0.52;
-  filter: grayscale(0.78) blur(1.2px) saturate(0.42);
-}
-
-.react-flow__node.is-focus-node .learning-node::before,
-.react-flow__node.is-choice-node .learning-node::before,
-.react-flow__node.is-context-node .learning-node::before {
-  display: block;
-  margin-bottom: 5px;
-  color: rgba(174, 135, 82, 0.72);
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 700;
-}
-
-.react-flow__node.is-focus-node .learning-node::before {
-  content: "CURRENT";
-}
-
-.react-flow__node.is-choice-node .learning-node::before {
-  content: "NEXT";
-}
-
-.react-flow__node.is-context-node .learning-node::before {
-  content: "CONTEXT";
 }
 
 .node-handle {
@@ -1163,7 +1132,7 @@ button {
   overflow: auto;
 }
 
-.detail-panel section {
+.detail-panel > section {
   min-height: 100%;
 }
 
@@ -1211,6 +1180,51 @@ button {
   color: #c7d0ca;
   font-size: 13px;
   line-height: 1.72;
+}
+
+.brief-more {
+  margin-top: 4px;
+  border-top: 1px solid rgba(224, 214, 190, 0.1);
+  padding-top: 2px;
+}
+
+.brief-more summary,
+.detail-explain-grid summary,
+.note-template summary,
+.screenshot-block summary {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: space-between;
+  color: rgba(240, 234, 220, 0.84);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 650;
+  list-style: none;
+}
+
+.brief-more summary::-webkit-details-marker,
+.detail-explain-grid summary::-webkit-details-marker,
+.note-template summary::-webkit-details-marker,
+.screenshot-block summary::-webkit-details-marker {
+  display: none;
+}
+
+.brief-more summary::after,
+.detail-explain-grid summary::after,
+.note-template summary::after,
+.screenshot-block summary::after {
+  content: "+";
+  color: rgba(138, 146, 121, 0.86);
+  font-family: var(--font-mono);
+  font-size: 16px;
+}
+
+.brief-more[open] summary::after,
+.detail-explain-grid details[open] summary::after,
+.note-template[open] summary::after,
+.screenshot-block[open] summary::after {
+  content: "-";
 }
 
 .learning-brief ol {
@@ -1290,12 +1304,8 @@ button {
   background: rgba(255, 255, 255, 0.02);
 }
 
-.detail-explain-grid h3,
-.note-template h3 {
-  margin: 0;
-  color: #e8e0ce;
-  font-size: 13px;
-  font-weight: 720;
+.detail-explain-grid details + details {
+  border-top: 1px solid rgba(224, 214, 190, 0.08);
 }
 
 .detail-explain-grid p,
@@ -1304,6 +1314,205 @@ button {
   color: #c6bfad;
   font-size: 12px;
   line-height: 1.72;
+}
+
+.screenshot-block {
+  margin-top: 10px;
+  border-top: 1px solid rgba(224, 214, 190, 0.12);
+}
+
+.screen-mock {
+  overflow: hidden;
+  margin: 4px 0 12px;
+  border: 1px solid rgba(224, 214, 190, 0.14);
+  border-radius: 6px;
+  background: #12110e;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+}
+
+.screen-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 11px;
+  border-bottom: 1px solid rgba(224, 214, 190, 0.1);
+  background: rgba(240, 234, 220, 0.05);
+}
+
+.screen-toolbar i {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(240, 234, 220, 0.32);
+}
+
+.screen-toolbar span {
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(240, 234, 220, 0.62);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.web-layout nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  padding: 0 14px;
+  color: rgba(240, 234, 220, 0.68);
+  background: #1d1b16;
+  font-size: 11px;
+}
+
+.web-layout nav strong {
+  margin-right: auto;
+  color: #f4ecdc;
+  font-size: 13px;
+}
+
+.web-layout main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 118px;
+  gap: 12px;
+  padding: 14px;
+  background: linear-gradient(145deg, #e8e1d1, #cfc5b0);
+}
+
+.web-layout section {
+  min-height: 140px;
+  padding: 14px;
+  border: 1px solid rgba(54, 48, 38, 0.15);
+  border-radius: 5px;
+  color: #2d2a23;
+  background: rgba(255, 252, 242, 0.86);
+}
+
+.web-layout h4,
+.web-layout p {
+  margin: 0 0 10px;
+}
+
+.web-layout h4 {
+  font-family: var(--font-ui);
+  font-size: 17px;
+}
+
+.web-layout p {
+  color: rgba(45, 42, 35, 0.72);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.web-layout label {
+  color: rgba(45, 42, 35, 0.72);
+  font-size: 11px;
+}
+
+.fake-input {
+  margin-top: 5px;
+  padding: 9px 10px;
+  border: 1px solid rgba(45, 42, 35, 0.18);
+  border-radius: 3px;
+  background: white;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.web-layout aside {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+}
+
+.web-layout aside span {
+  padding: 8px;
+  border-radius: 3px;
+  color: #f4ecdc;
+  background: rgba(20, 18, 14, 0.82);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.terminal-lines,
+.crypto-paper,
+.pwn-debug {
+  display: grid;
+  gap: 7px;
+  padding: 14px;
+  color: #d8d2c4;
+  background: #0d0f0d;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.terminal-lines p,
+.crypto-paper p,
+.pwn-debug p {
+  margin: 0;
+}
+
+.screen-terminal .terminal-lines p:first-child {
+  color: #aeb79b;
+}
+
+.evidence-grid,
+.reverse-columns {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px;
+  background: #15140f;
+}
+
+.evidence-grid div,
+.reverse-columns div {
+  display: grid;
+  gap: 7px;
+  align-content: start;
+}
+
+.evidence-grid span,
+.reverse-columns span {
+  padding: 7px 8px;
+  border: 1px solid rgba(224, 214, 190, 0.1);
+  border-radius: 3px;
+  color: rgba(240, 234, 220, 0.72);
+  background: rgba(255, 255, 255, 0.035);
+  font-size: 11px;
+}
+
+.evidence-grid pre,
+.reverse-columns pre {
+  min-height: 140px;
+  margin: 0;
+  padding: 11px;
+  overflow: hidden;
+  border: 1px solid rgba(224, 214, 190, 0.1);
+  border-radius: 3px;
+  color: #d8d2c4;
+  background: #0c0d0b;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.crypto-paper {
+  min-height: 160px;
+  background:
+    linear-gradient(rgba(74, 65, 46, 0.08) 1px, transparent 1px),
+    #e4dac7;
+  background-size: 100% 24px;
+  color: #2c2922;
+}
+
+.crypto-paper strong {
+  margin-top: 4px;
+  color: #6f4e29;
 }
 
 .detail-next-strip strong {

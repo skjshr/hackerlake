@@ -25,29 +25,24 @@ import {
 
 type GateState = 'notice' | 'category' | 'workspace';
 
-const phaseUi: Record<AttackPhase, { code: string; label: string; guide: string }> = {
+const phaseUi: Record<AttackPhase, { label: string; guide: string }> = {
   偵察: {
-    code: 'OBSERVE',
     label: '問題文を読む',
     guide: '対象を壊さず眺めて、何が入力で、何が出力で、どこまで見てよいかを決める。',
   },
   列挙: {
-    code: 'LIST',
     label: '観察する',
     guide: '見つけた入口を種類別に並べ、次に深く見る候補を選べる状態にする。',
   },
   侵入: {
-    code: 'CHECK',
     label: '仮説を確認',
     guide: '突破手順ではなく、入口仮説が本当に成り立つかを許可範囲で小さく確認する。',
   },
   権限昇格: {
-    code: 'IMPACT',
     label: '差分を見る',
     guide: '権限、条件、影響範囲の差を読み、何ができる状態に変わるかを理解する。',
   },
   '維持・痕跡消去': {
-    code: 'LOG',
     label: '記録する',
     guide: '隠蔽手順ではなく、何が残り、どう記録し、どう防御・復習へ戻すかを見る。',
   },
@@ -89,6 +84,143 @@ function LearningNode({ data }: NodeProps<Node<LearningNodeData>>) {
 
 const nodeTypes = { learning: LearningNode };
 const defaultCategory = categories[0]!;
+
+function ScreenshotMock({ node }: { node: LearningNodeData }) {
+  const first = node.observe[0];
+  const second = node.observe[1];
+  const third = node.observe[2];
+
+  if (node.category === 'web') {
+    return (
+      <div className="screen-mock screen-web" aria-label="Web画面例">
+        <div className="screen-toolbar">
+          <i />
+          <i />
+          <i />
+          <span>https://ctf-lab.local/app</span>
+        </div>
+        <div className="web-layout">
+          <nav>
+            <strong>検証ポータル</strong>
+            <span>ホーム</span>
+            <span>ログイン</span>
+            <span>アップロード</span>
+          </nav>
+          <main>
+            <section>
+              <h4>{node.title}</h4>
+              <p>{node.summary}</p>
+              <label>検索</label>
+              <div className="fake-input">user=guest</div>
+            </section>
+            <aside>
+              <span>Cookie: session=...</span>
+              <span>状態: 200</span>
+              <span>方式: GET</span>
+            </aside>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (node.category === 'network') {
+    return (
+      <div className="screen-mock screen-terminal" aria-label="ネットワーク画面例">
+        <div className="screen-toolbar">
+          <i />
+          <i />
+          <i />
+          <span>ラボ端末</span>
+        </div>
+        <div className="terminal-lines">
+          <p>$ observe lab-network --scope allowed</p>
+          <p>host-a.lab  10.10.0.12  http  open</p>
+          <p>host-b.lab  10.10.0.21  ssh   filtered</p>
+          <p>観察: {first?.label ?? node.title}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (node.category === 'forensics') {
+    return (
+      <div className="screen-mock screen-forensics" aria-label="フォレンジック画面例">
+        <div className="screen-toolbar">
+          <i />
+          <i />
+          <i />
+          <span>case.zip / 証拠ビューア</span>
+        </div>
+        <div className="evidence-grid">
+          <div>
+            <span>image001.png</span>
+            <span>access.log</span>
+            <span>capture.pcap</span>
+          </div>
+          <pre>0000  89 50 4e 47 0d 0a 1a 0a{"\n"}0010  49 48 44 52 00 00 03 20{"\n"}0020  {node.title.slice(0, 18)}</pre>
+        </div>
+      </div>
+    );
+  }
+
+  if (node.category === 'crypto') {
+    return (
+      <div className="screen-mock screen-crypto" aria-label="暗号画面例">
+        <div className="screen-toolbar">
+          <i />
+          <i />
+          <i />
+          <span>problem.txt / 問題文</span>
+        </div>
+        <div className="crypto-paper">
+          <p>ciphertext_1 = 6f 2a 90 c1 ...</p>
+          <p>ciphertext_2 = 6f 2a 91 54 ...</p>
+          <p>hint = same prefix, same length</p>
+          <strong>{first?.label ?? node.title}</strong>
+        </div>
+      </div>
+    );
+  }
+
+  if (node.category === 'reverse') {
+    return (
+      <div className="screen-mock screen-reverse" aria-label="リバース画面例">
+        <div className="screen-toolbar">
+          <i />
+          <i />
+          <i />
+          <span>文字列一覧 / sample.bin</span>
+        </div>
+        <div className="reverse-columns">
+          <pre>00401210  check_input{"\n"}00401248  verify_user{"\n"}00401302  success</pre>
+          <div>
+            <span>{first?.label ?? node.title}</span>
+            <span>{second?.label ?? '入力の流れ'}</span>
+            <span>{third?.label ?? '分岐の位置'}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="screen-mock screen-pwn" aria-label="Pwn画面例">
+      <div className="screen-toolbar">
+        <i />
+        <i />
+        <i />
+        <span>デバッガ / ローカルラボ</span>
+      </div>
+      <div className="pwn-debug">
+        <p>入力サイズ: 64 bytes</p>
+        <p>結果: ローカルラボ内で再現</p>
+        <p>見る点: {first?.label ?? node.title}</p>
+        <p>許可された環境の外では試さない</p>
+      </div>
+    </div>
+  );
+}
 
 function getFlowWindowIds(nodeId: string, categoryId: CategoryId, previousId?: string) {
   const rootId = getCategory(categoryId).rootNodeId;
@@ -292,7 +424,6 @@ export function App() {
         <div className="phase-track" aria-label="hacking phases">
           {attackPhases.map((phase) => (
             <span key={phase} className={phase === activePhase ? 'active' : ''}>
-              <em>{phaseUi[phase].code}</em>
               {phaseUi[phase].label}
             </span>
           ))}
@@ -363,25 +494,33 @@ export function App() {
             <section className="learning-brief">
               <h3>ゴール</h3>
               <p>{phaseUi[activePhase].guide}</p>
-              <p>{selectedNode.data.intent}</p>
-              <ol>
-                {firstSteps.map((item) => (
-                  <li key={item.label}>{item.how}</li>
-                ))}
-              </ol>
+              <details className="brief-more">
+                <summary>最初の3手</summary>
+                <p>{selectedNode.data.intent}</p>
+                <ol>
+                  {firstSteps.map((item) => (
+                    <li key={item.label}>{item.how}</li>
+                  ))}
+                </ol>
+              </details>
             </section>
 
-            <details className="detail-block" open>
+            <details className="screenshot-block">
+              <summary>画面例を見る</summary>
+              <ScreenshotMock node={selectedNode.data} />
+            </details>
+
+            <details className="detail-block">
               <summary>何それ？</summary>
               <p>{selectedNode.data.what}</p>
             </details>
 
-            <details className="detail-block" open>
+            <details className="detail-block">
               <summary>なぜ見るか</summary>
               <p>{selectedNode.data.intent}</p>
             </details>
 
-            <details className="detail-block" open>
+            <details className="detail-block">
               <summary>どう見るか</summary>
               <ol className="observe-list">
                 {selectedNode.data.observe.slice(0, 4).map((item) => (
@@ -398,14 +537,14 @@ export function App() {
             </details>
 
             <section className="detail-explain-grid">
-              <div>
-                <h3>ミニ例</h3>
+              <details>
+                <summary>ミニ例</summary>
                 <p>{getMiniExample(selectedNode.data)}</p>
-              </div>
-              <div>
-                <h3>判断基準</h3>
+              </details>
+              <details>
+                <summary>判断基準</summary>
                 <p>{getDecisionText(selectedNode.data)}</p>
-              </div>
+              </details>
             </section>
 
             <section className="detail-next-strip" aria-label="next learning nodes">
@@ -443,19 +582,19 @@ export function App() {
               </details>
             )}
 
-            <details className="detail-block" open>
+            <details className="detail-block">
               <summary>詳しく読む</summary>
               <p>{selectedNode.data.details}</p>
               <p className="safety-note">{selectedNode.data.safety}</p>
             </details>
 
-            <section className="note-template">
-              <h3>観察ログ</h3>
+            <details className="note-template">
+              <summary>観察ログ</summary>
               <p>見たもの: ______</p>
               <p>分かったこと: ______</p>
               <p>まだ不明なこと: ______</p>
               <p>次に確認すること: ______</p>
-            </section>
+            </details>
           </motion.section>
       </aside>
           </motion.div>
