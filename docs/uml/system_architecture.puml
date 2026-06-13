@@ -1,0 +1,42 @@
+@startuml
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+actor "学習者" as Learner
+
+node "Browser" {
+  component "React/Vite App" as App
+  component "AppShell" as Shell
+  component "KnowledgeMap\n(React Flow)" as Map
+  component "NodeDetailPanel" as Detail
+  component "LearningHistory" as History
+  component "MotionController" as Motion
+  component "StaticNodeRepository" as Repo
+}
+
+artifact "Static Node Dataset\nTypeScript/JSON" as Dataset
+artifact "Generated Assets\nUI concept / icons" as Assets
+
+cloud "Future Backend\nNot v1 scope" {
+  component "Content API" as Api
+  component "Auth Provider" as Auth
+  database "PostgreSQL\nFuture" as Db
+}
+
+Learner --> App : 操作/閲覧
+App --> Shell
+Shell --> Map
+Shell --> Detail
+Shell --> History
+Map --> Motion
+Map --> Repo
+Detail --> Repo
+Repo --> Dataset
+App --> Assets
+
+Repo ..> Api : Future: 教材取得
+History ..> Api : Future: 履歴保存
+Api ..> Auth : Future: 認証確認
+Api ..> Db : Future: 永続化
+@enduml

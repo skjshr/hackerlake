@@ -1,0 +1,29 @@
+@startuml
+skinparam shadowing false
+left to right direction
+
+[*] --> SCR001 : open app
+
+state "SCR-001\nメインマップ画面" as SCR001 {
+  [*] --> MapReady
+  MapReady --> CategoryFocused : カテゴリ選択
+  CategoryFocused --> NodeFocused : ノード選択
+  NodeFocused --> NodeFocused : 関連ノード選択
+  NodeFocused --> HistoryReview : 履歴選択
+  HistoryReview --> NodeFocused : 復元
+  CategoryFocused --> MapReady : リセット
+  NodeFocused --> MapReady : リセット
+}
+
+state "SCR-002\nノード詳細ペイン" as SCR002
+state "SCR-003\n学習履歴タイムライン" as SCR003
+state "SCR-004\nログイン画面\nFuture" as SCR004
+state "SCR-005\n教材編集画面\nFuture" as SCR005
+
+SCR001 --> SCR002 : 右ペイン更新
+SCR002 --> SCR001 : 次ノード選択/戻る
+SCR001 --> SCR003 : 下部履歴操作
+SCR003 --> SCR001 : 履歴復元
+SCR001 --> SCR004 : Future login
+SCR004 --> SCR005 : Editor/Admin only
+@enduml

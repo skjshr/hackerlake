@@ -1,0 +1,37 @@
+@startuml
+skinparam shadowing false
+left to right direction
+
+actor "学習者" as Learner
+rectangle "HackerLake Frontend" {
+  circle "1. カテゴリ選択" as P1
+  circle "2. ノード展開" as P2
+  circle "3. 詳細表示" as P3
+  circle "4. 履歴更新" as P4
+  database "D1: Node Dataset\nCategory / Node / Edge" as D1
+  database "D2: UI State\nMapViewState" as D2
+  database "D3: Local Learning History\nBrowser memory" as D3
+}
+
+Learner --> P1 : categoryId
+P1 --> D1 : rootNodeId照会
+D1 --> P1 : Category
+P1 --> D2 : selectedCategoryId更新
+P1 --> P2 : rootNodeId
+
+Learner --> P2 : nodeId
+P2 --> D1 : node/edge照会
+D1 --> P2 : LearningNode + KnowledgeEdge
+P2 --> D2 : selectedNodeId/expandedNodeIds更新
+P2 --> P3 : selected node
+P2 --> P4 : selected event
+
+P3 --> Learner : 意図/観察点/次分岐/技術詳細
+P4 --> D3 : append history item
+D3 --> Learner : 選択履歴
+
+cloud "Future Backend" {
+  database "D4: User History DB" as D4
+}
+D3 ..> D4 : Future: ログイン時同期
+@enduml

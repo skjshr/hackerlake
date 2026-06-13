@@ -1,0 +1,64 @@
+@startuml
+skinparam shadowing false
+hide circle
+left to right direction
+
+entity "categories" as categories {
+  * id : string <<PK>>
+  --
+  title : string
+  description : text
+  root_node_id : string <<FK>>
+  display_order : number
+}
+
+entity "nodes" as nodes {
+  * id : string <<PK>>
+  --
+  category_id : string <<FK>>
+  title : string
+  summary : text
+  intent : text
+  what_to_observe : json
+  signals : json
+  technical_details : text
+  safety_note : text
+  status : string
+}
+
+entity "edges" as edges {
+  * id : string <<PK>>
+  --
+  from_node_id : string <<FK>>
+  to_node_id : string <<FK>>
+  label : string
+  reason : text
+  display_condition : string
+}
+
+entity "users" as users {
+  * id : string <<PK>>
+  --
+  email : string
+  display_name : string
+  role : string
+  status : string
+  created_at : datetime
+}
+
+entity "learning_histories" as histories {
+  * id : string <<PK>>
+  --
+  user_id : string <<FK>>
+  node_id : string <<FK>>
+  selected_at : datetime
+  reason_label : string
+}
+
+categories ||--o{ nodes : contains
+nodes ||--o{ edges : from
+nodes ||--o{ edges : to
+users ||--o{ histories : owns
+nodes ||--o{ histories : selected
+categories ||--|| nodes : root
+@enduml

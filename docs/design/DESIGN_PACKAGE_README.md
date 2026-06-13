@@ -11,6 +11,7 @@ This directory contains the SIer-style design package for HackerLake.
 - `05_API設計書_HackerLake.xlsx`
 - `06_認証認可設計書_HackerLake.xlsx`
 - `07_テスト設計書_HackerLake.xlsx`
+- `08_図面集_HackerLake.xlsx`
 
 ## License-Free Previews
 
@@ -23,6 +24,7 @@ Run from the repository root:
 
 ```powershell
 pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\build-design-docs.ps1
+pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\build-diagram-book.ps1
 pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\validate-design-docs.ps1
 pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\render-design-previews.ps1
 ```

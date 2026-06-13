@@ -14,7 +14,8 @@ $expectedWorkbooks = @(
     "04_データ設計書_HackerLake.xlsx",
     "05_API設計書_HackerLake.xlsx",
     "06_認証認可設計書_HackerLake.xlsx",
-    "07_テスト設計書_HackerLake.xlsx"
+    "07_テスト設計書_HackerLake.xlsx",
+    "08_図面集_HackerLake.xlsx"
 )
 
 $expectedUml = @(
@@ -24,7 +25,11 @@ $expectedUml = @(
     "class.puml",
     "sequence_node_select.puml",
     "activity_learning_flow.puml",
-    "auth_future_state.puml"
+    "auth_future_state.puml",
+    "system_architecture.puml",
+    "data_flow.puml",
+    "er.puml",
+    "screen_transition.puml"
 )
 
 $missing = @()
