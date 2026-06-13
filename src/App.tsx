@@ -67,10 +67,18 @@ function getCategoryKeywords(category: typeof categories[number]) {
   return category.subtitle.split('・').map((keyword) => keyword.replace(/を読む$/, '')).slice(0, 4);
 }
 
-function getConnectionKind(current: LearningNodeData, target: LearningNodeData): NonNullable<LearningNodeData['flowRelation']> {
+type FlowRelation = 'same' | 'next' | 'previous';
+
+function getConnectionKind(current: LearningNodeData, target: LearningNodeData) {
   if (target.level > current.level) return '次の段階';
   if (target.level < current.level) return '前提確認';
   return '同じ段階';
+}
+
+function getFlowRelation(current: LearningNodeData, target: LearningNodeData): FlowRelation {
+  if (target.level > current.level) return 'next';
+  if (target.level < current.level) return 'previous';
+  return 'same';
 }
 
 function getMiniExample(node: LearningNodeData) {
@@ -97,7 +105,6 @@ function LearningNode({ data }: NodeProps<Node<LearningNodeData>>) {
       <Handle className="node-handle node-handle-source" position={Position.Right} type="source" />
       <span className="node-phase">{phaseUi[data.phase].label}</span>
       <strong>{data.title}</strong>
-      {data.flowRelation && <em className="node-relation">{data.flowRelation}</em>}
     </div>
   );
 }
@@ -281,16 +288,13 @@ export function App() {
         .map((node) => ({
           ...node,
           selected: false,
-          data: {
-            ...node.data,
-            flowRelation: node.id === selectedNodeId ? '現在地' : getConnectionKind(selectedNode.data, node.data),
-          },
+          data: node.data,
           className:
             node.id === selectedNodeId
-              ? 'is-focus-node'
+              ? `is-focus-node node-current node-level-${node.data.level}`
               : selectedNodeId === selectedRootId || nextChoiceIds.has(node.id)
-                ? 'is-choice-node'
-                : 'is-context-node',
+                ? `is-choice-node node-${getFlowRelation(selectedNode.data, node.data)} node-level-${node.data.level}`
+                : `is-context-node node-${getFlowRelation(selectedNode.data, node.data)} node-level-${node.data.level}`,
         })),
     [activeIds, nextChoiceIds, selectedCategory, selectedNode.data, selectedNodeId, selectedRootId],
   );
@@ -301,10 +305,11 @@ export function App() {
         .filter((edge) => activeIds.has(edge.source) && activeIds.has(edge.target))
         .map((edge) => ({
           ...edge,
-          className:
+          className: `${getNode(edge.source)?.data.level === getNode(edge.target)?.data.level ? 'edge-lateral' : 'edge-forward'} ${
             edge.source === selectedNodeId || edge.target === selectedNodeId
               ? 'edge-hot'
-              : 'edge-calm',
+              : 'edge-calm'
+          }`,
       })),
     [activeIds, selectedNodeId],
   );
@@ -463,10 +468,6 @@ export function App() {
             <span>{selectedCategoryData.title} / {phaseUi[activePhase].label}</span>
             <h1>{selectedNode.data.title}</h1>
           </div>
-          <div className="stage-relation-guide" aria-label="map relation guide">
-            <span>同じ列 = 同じ段階</span>
-            <span>右の列 = 次の段階</span>
-          </div>
         </div>
         <div className="connection-rail" aria-label="node connections">
           <div className="connection-current">
@@ -477,8 +478,14 @@ export function App() {
             <span>次に進める</span>
             <div>
               {connectionItems.map(({ node, kind }) => (
-                <button key={node.id} onClick={() => focusNode(node.id)} type="button">
-                  <em>{kind}</em>
+                <button
+                  className={`relation-${getFlowRelation(selectedNode.data, node.data)}`}
+                  key={node.id}
+                  onClick={() => focusNode(node.id)}
+                  type="button"
+                >
+                  <em aria-hidden="true" />
+                  <span className="sr-only">{kind}</span>
                   {node.data.title}
                 </button>
               ))}
@@ -625,8 +632,14 @@ export function App() {
               <span>おすすめの次</span>
               <div>
                 {connectionItems.map(({ node, kind }) => (
-                  <button key={node.id} onClick={() => focusNode(node.id)} type="button">
-                    <em>{kind}</em>
+                  <button
+                    className={`relation-${getFlowRelation(selectedNode.data, node.data)}`}
+                    key={node.id}
+                    onClick={() => focusNode(node.id)}
+                    type="button"
+                  >
+                    <em aria-hidden="true" />
+                    <span className="sr-only">{kind}</span>
                     <strong>{node.data.title}</strong>
                   </button>
                 ))}

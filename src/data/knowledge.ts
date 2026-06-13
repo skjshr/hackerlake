@@ -22,7 +22,6 @@ export type LearningNodeData = {
   category: CategoryId;
   phase: AttackPhase;
   level: number;
-  flowRelation?: '現在地' | '同じ段階' | '次の段階' | '前提確認';
   summary: string;
   what: string;
   intent: string;
