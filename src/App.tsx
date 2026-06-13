@@ -9,7 +9,7 @@ import {
   type NodeProps,
   type ReactFlowInstance,
 } from '@xyflow/react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Radar, TerminalSquare } from 'lucide-react';
 import {
   attackPhases,
@@ -27,33 +27,41 @@ type GateState = 'notice' | 'category' | 'workspace';
 type NoticeCheckId = 'scope' | 'law' | 'nonCrime';
 
 const noticeItems: Array<{ id: NoticeCheckId; text: string }> = [
-  { id: 'scope', text: '学習、CTF、自分が管理する検証環境だけで使う。' },
-  { id: 'law', text: '許可されていない対象は、スキャンだけでも法律や規約に抵触する可能性がある。' },
-  { id: 'nonCrime', text: '犯罪行為、不正アクセス、実サービスへの試行を推奨しない。' },
+  { id: 'scope', text: '学習、CTF、自分が管理する検証環境だけで使う' },
+  { id: 'law', text: '許可されていない対象は、スキャンだけでも法律や規約に抵触する可能性がある' },
+  { id: 'nonCrime', text: '犯罪行為、不正アクセス、実サービスへの試行を推奨しない' },
 ];
 
 const phaseUi: Record<AttackPhase, { label: string; guide: string }> = {
   偵察: {
     label: '問題文を読む',
-    guide: '対象を壊さず眺めて、何が入力で、何が出力で、どこまで見てよいかを決める。',
+    guide: '対象を壊さず眺めて、何が入力で、何が出力で、どこまで見てよいかを決める',
   },
   列挙: {
     label: '観察する',
-    guide: '見つけた入口を種類別に並べ、次に深く見る候補を選べる状態にする。',
+    guide: '見つけた入口を種類別に並べ、次に深く見る候補を選べる状態にする',
   },
   侵入: {
     label: '仮説を確認',
-    guide: '突破手順ではなく、入口仮説が本当に成り立つかを許可範囲で小さく確認する。',
+    guide: '突破手順ではなく、入口仮説が本当に成り立つかを許可範囲で小さく確認する',
   },
   権限昇格: {
     label: '差分を見る',
-    guide: '権限、条件、影響範囲の差を読み、何ができる状態に変わるかを理解する。',
+    guide: '権限、条件、影響範囲の差を読み、何ができる状態に変わるかを理解する',
   },
   '維持・痕跡消去': {
     label: '記録する',
-    guide: '隠蔽手順ではなく、何が残り、どう記録し、どう防御・復習へ戻すかを見る。',
+    guide: '隠蔽手順ではなく、何が残り、どう記録し、どう防御・復習へ戻すかを見る',
   },
 };
+
+function stripStops(text: string) {
+  return text.replace(/。/g, '');
+}
+
+function compactText(text: string) {
+  return text.length <= 90 ? stripStops(text) : text;
+}
 
 function getConnectionKind(current: LearningNodeData, target: LearningNodeData) {
   if (target.level > current.level) return '次の段階';
@@ -63,14 +71,14 @@ function getConnectionKind(current: LearningNodeData, target: LearningNodeData) 
 
 function getMiniExample(node: LearningNodeData) {
   const [first, second] = node.observe;
-  if (!first) return `${node.title}では、まず対象を一つだけ選び、見えた事実を短く記録する。`;
-  const next = second ? `次に「${second.label}」も見て、同じ説明でつながるか確認する。` : '次に、同じ観察をもう一度別の対象で確認する。';
-  return `例: 「${first.label}」を見るときは、${first.how} 見えた内容を「${first.what}」としてメモする。${next}`;
+  if (!first) return `${node.title}では、まず対象を一つだけ選び、見えた事実を短く記録する`;
+  const next = second ? `次に「${second.label}」も見て、同じ説明でつながるか確認する` : '次に、同じ観察をもう一度別の対象で確認する';
+  return stripStops(`例: 「${first.label}」を見るときは、${first.how} 見えた内容を「${first.what}」としてメモする ${next}`);
 }
 
 function getDecisionText(node: LearningNodeData) {
   const labels = node.observe.slice(0, 3).map((item) => `「${item.label}」`).join('、');
-  return `${labels || '観察項目'}を自分の言葉で説明できたら次へ進む。説明できない項目があるなら、前のノードへ戻って問題文、画面、ログ、配布物のどれを見落としたか確認する。`;
+  return `${labels || '観察項目'}を自分の言葉で説明できたら次へ進む 説明できない項目があるなら、前のノードへ戻って問題文、画面、ログ、配布物のどれを見落としたか確認する`;
 }
 
 function LearningNode({ data }: NodeProps<Node<LearningNodeData>>) {
@@ -424,8 +432,16 @@ export function App() {
     <div className="shell-root">
       <div className="ambient-grid" />
       <div className="signal-field" />
+      <AnimatePresence mode="wait">
         {gateState === 'notice' && (
-          <>
+          <motion.div
+            className="screen-state"
+            key="notice"
+            initial={{ opacity: 0, y: 10, filter: 'blur(12px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -8, filter: 'blur(14px)' }}
+            transition={{ duration: 0.34, ease: [0.2, 0.9, 0.2, 1] }}
+          >
             <NoticeGate
               agreed={agreed}
               checks={noticeChecks}
@@ -433,19 +449,20 @@ export function App() {
               onEnter={() => agreed && setGateState('category')}
             />
             <BootScreen overlay />
-          </>
+          </motion.div>
         )}
-        {gateState === 'category' && <CategoryGate onSelect={chooseCategory} />}
+        {gateState === 'category' && <CategoryGate key="category" onSelect={chooseCategory} />}
         {gateState === 'workspace' && (
           <motion.div
+            key="workspace"
             className={`app-shell ${selectedNodeId !== selectedRootId ? 'has-selected-focus' : ''} ${
               detailDominant ? 'detail-dominant' : ''
             }`}
             style={{ '--theme-color': selectedCategoryData.color } as React.CSSProperties}
-            initial={false}
-            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.55, ease: [0.2, 0.9, 0.2, 1] }}
+            initial={{ opacity: 0, y: 12, filter: 'blur(16px)' }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -8, filter: 'blur(14px)' }}
+            transition={{ duration: 0.42, ease: [0.2, 0.9, 0.2, 1] }}
           >
       <header className="topbar">
         <div className="brand">
@@ -515,15 +532,15 @@ export function App() {
       <aside className="detail-panel">
           <motion.section
             key={selectedNodeId}
-            initial={false}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -12 }}
-            transition={{ duration: 0.18 }}
+            initial={{ opacity: 0, x: 16, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, x: -12, filter: 'blur(8px)' }}
+            transition={{ duration: 0.24, ease: [0.2, 0.9, 0.2, 1] }}
           >
             <div className="detail-heading">
               <span>{selectedCategoryData.title} / {phaseUi[activePhase].label}</span>
               <h2>{selectedNode.data.title}</h2>
-              <p className="lead">{selectedNode.data.summary}</p>
+              <p className="lead">{compactText(selectedNode.data.summary)}</p>
             </div>
 
             <section className="learning-brief">
@@ -531,10 +548,10 @@ export function App() {
               <p>{phaseUi[activePhase].guide}</p>
               <details className="brief-more">
                 <summary>最初の3手</summary>
-                <p>{selectedNode.data.intent}</p>
+                <p>{compactText(selectedNode.data.intent)}</p>
                 <ol>
                   {firstSteps.map((item) => (
-                    <li key={item.label}>{item.how}</li>
+                    <li key={item.label}>{compactText(item.how)}</li>
                   ))}
                 </ol>
               </details>
@@ -552,7 +569,7 @@ export function App() {
 
             <details className="detail-block">
               <summary>なぜ見るか</summary>
-              <p>{selectedNode.data.intent}</p>
+              <p>{compactText(selectedNode.data.intent)}</p>
             </details>
 
             <details className="detail-block">
@@ -561,10 +578,10 @@ export function App() {
                 {selectedNode.data.observe.slice(0, 4).map((item) => (
                   <li key={item.label}>
                     <strong>{item.label}</strong>
-                    <p>{item.how}</p>
+                    <p>{compactText(item.how)}</p>
                     <details className="inline-help">
                       <summary>何それ？</summary>
-                      <p>{item.what}</p>
+                      <p>{compactText(item.what)}</p>
                     </details>
                   </li>
                 ))}
@@ -609,7 +626,7 @@ export function App() {
                       >
                         <span>見えた条件</span>
                         <strong>{branch.signal}</strong>
-                        <em>{targetNode ? branch.action : '観察メモに残す'}</em>
+                        <em>{compactText(targetNode ? branch.action : '観察メモに残す')}</em>
                       </button>
                     );
                   })}
@@ -634,6 +651,7 @@ export function App() {
       </aside>
           </motion.div>
         )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -646,14 +664,14 @@ function CategoryGate({ onSelect }: CategoryGateProps) {
   return (
     <motion.section
       className="category-gate"
-      initial={{ opacity: 0, filter: 'blur(10px)' }}
-      animate={{ opacity: 1, filter: 'blur(0px)' }}
-      transition={{ duration: 0.32, ease: [0.2, 0.9, 0.2, 1] }}
+      initial={{ opacity: 0, y: 10, filter: 'blur(14px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      exit={{ opacity: 0, y: -8, filter: 'blur(14px)' }}
+      transition={{ duration: 0.34, ease: [0.2, 0.9, 0.2, 1] }}
     >
       <div className="category-shell">
         <div className="category-heading">
           <h1>ジャンルを選ぶ</h1>
-          <p>今から見る対象をひとつ選ぶ。各ジャンルに偵察から記録整理までの流れを入れてある。</p>
         </div>
         <div className="category-grid">
           {categories.map((category) => (
@@ -665,8 +683,8 @@ function CategoryGate({ onSelect }: CategoryGateProps) {
               <button className="category-main" onClick={() => onSelect(category.id)} type="button">
                 <small>{category.englishTitle}</small>
                 <strong>{category.title}</strong>
-                <span>{category.subtitle}</span>
-                <em>{category.choose}</em>
+                <span>{compactText(category.subtitle)}</span>
+                <em>{compactText(category.choose)}</em>
               </button>
               <details>
                 <summary>何それ？</summary>
@@ -744,7 +762,7 @@ function NoticeGate({ agreed, checks, onCheckChange, onEnter }: NoticeGateProps)
         <h1>CAUTION</h1>
         <h2>許可のない対象には触れない</h2>
         <p>
-          HackerLakeは、攻撃手順を配るサイトではありません。CTFと自分の検証環境で、状況を読み、次の一手を選ぶための訓練用UIです。
+          HackerLakeは攻撃手順を配るサイトではありません CTFと自分の検証環境で、状況を読み、次の一手を選ぶための訓練用UIです
         </p>
         <div className="notice-list">
           {noticeItems.map((item) => (
