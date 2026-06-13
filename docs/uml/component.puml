@@ -1,0 +1,26 @@
+@startuml
+skinparam componentStyle rectangle
+skinparam shadowing false
+package "Frontend React/Vite" {
+  [AppShell]
+  [KnowledgeMap]
+  [NodeDetailPanel]
+  [CategoryRail]
+  [LearningHistory]
+  [MotionController]
+  [SafetyCopyGuard]
+  [StaticNodeRepository]
+}
+
+database "Static Dataset\nTypeScript/JSON" as Dataset
+
+[AppShell] --> [CategoryRail]
+[AppShell] --> [KnowledgeMap]
+[AppShell] --> [NodeDetailPanel]
+[AppShell] --> [LearningHistory]
+[KnowledgeMap] --> [MotionController]
+[KnowledgeMap] --> [StaticNodeRepository]
+[NodeDetailPanel] --> [StaticNodeRepository]
+[SafetyCopyGuard] --> [StaticNodeRepository]
+[StaticNodeRepository] --> Dataset
+@enduml

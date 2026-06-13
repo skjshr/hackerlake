@@ -1,0 +1,21 @@
+@startuml
+skinparam shadowing false
+actor "学習者" as Learner
+participant "KnowledgeMap" as Map
+participant "StaticNodeRepository" as Repo
+participant "MotionController" as Motion
+participant "NodeDetailPanel" as Detail
+participant "LearningHistory" as History
+
+Learner -> Map : ノード選択(nodeId)
+Map -> Repo : getNode(nodeId)
+Repo --> Map : LearningNode
+Map -> Repo : getRelatedEdges(nodeId)
+Repo --> Map : KnowledgeEdge[]
+Map -> Motion : focusNode(nodeId, relatedEdges)
+Motion --> Map : animation plan
+Map -> Detail : render(node)
+Map -> History : append(nodeId, reasonLabel)
+Detail --> Learner : 意図/観察/次の分岐を表示
+History --> Learner : 選択履歴を更新
+@enduml

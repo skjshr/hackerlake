@@ -1,0 +1,37 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+actor "学習者" as Learner
+actor "教材編集者\n(将来)" as Editor
+actor "管理者\n(将来)" as Admin
+
+rectangle "HackerLake v1" {
+  usecase "知識マップを閲覧する" as UC01
+  usecase "対象カテゴリを選択する" as UC02
+  usecase "ノードをズーム展開する" as UC03
+  usecase "観察意図と判断基準を読む" as UC04
+  usecase "選択履歴を戻る/辿る" as UC05
+  usecase "安全な教材文言を確認する" as UC06
+}
+
+rectangle "Future Scope" {
+  usecase "ログインする" as UC10
+  usecase "学習履歴を保存する" as UC11
+  usecase "教材ノードを編集する" as UC12
+  usecase "公開状態を管理する" as UC13
+}
+
+Learner --> UC01
+Learner --> UC02
+Learner --> UC03
+Learner --> UC04
+Learner --> UC05
+Learner --> UC10
+Learner --> UC11
+Editor --> UC12
+Admin --> UC13
+UC03 .> UC04 : include
+UC03 .> UC05 : include
+UC12 .> UC06 : include
+@enduml

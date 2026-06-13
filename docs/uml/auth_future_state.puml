@@ -1,0 +1,13 @@
+@startuml
+skinparam shadowing false
+[*] --> Guest
+Guest --> Authenticated : login success
+Guest --> AuthFailed : login failed
+AuthFailed --> Guest : retry/cancel
+Authenticated --> SessionRefreshing : token near expiry
+SessionRefreshing --> Authenticated : refresh success
+SessionRefreshing --> Guest : refresh failed
+Authenticated --> Guest : logout
+Authenticated --> Forbidden : role mismatch
+Forbidden --> Authenticated : navigate allowed feature
+@enduml

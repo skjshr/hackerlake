@@ -1,0 +1,50 @@
+@startuml
+skinparam shadowing false
+class LearningNode {
+  +id: string
+  +categoryId: string
+  +title: string
+  +summary: string
+  +intent: string
+  +whatToObserve: string[]
+  +signals: string[]
+  +nextNodeIds: string[]
+  +technicalDetails: string
+  +safetyNote: string
+}
+
+class KnowledgeEdge {
+  +id: string
+  +fromNodeId: string
+  +toNodeId: string
+  +label: string
+  +reason: string
+}
+
+class Category {
+  +id: string
+  +title: string
+  +description: string
+  +rootNodeId: string
+}
+
+class MapViewState {
+  +selectedCategoryId: string
+  +selectedNodeId: string
+  +zoomLevel: number
+  +expandedNodeIds: string[]
+  +highlightedEdgeIds: string[]
+}
+
+class LearningHistoryItem {
+  +nodeId: string
+  +selectedAt: Date
+  +reasonLabel: string
+}
+
+Category "1" --> "many" LearningNode
+LearningNode "1" --> "many" KnowledgeEdge : from
+KnowledgeEdge "many" --> "1" LearningNode : to
+MapViewState --> LearningNode : selected
+LearningHistoryItem --> LearningNode
+@enduml

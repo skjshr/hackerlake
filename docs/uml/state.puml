@@ -1,0 +1,20 @@
+@startuml
+skinparam shadowing false
+[*] --> AppLoading
+AppLoading --> MapReady : node dataset loaded
+AppLoading --> FatalError : dataset invalid
+
+MapReady --> CategoryFocused : category selected
+CategoryFocused --> NodeFocused : node selected
+NodeFocused --> NodeFocused : related node selected
+NodeFocused --> CategoryFocused : zoom out
+NodeFocused --> HistoryReview : history item selected
+HistoryReview --> NodeFocused : restore focus
+CategoryFocused --> MapReady : reset view
+NodeFocused --> MapReady : reset view
+
+MapReady --> ReducedMotionMode : prefers-reduced-motion
+ReducedMotionMode --> MapReady : preference disabled
+
+FatalError --> AppLoading : retry
+@enduml

@@ -1,0 +1,23 @@
+@startuml
+skinparam shadowing false
+start
+:全体マップを開く;
+:対象カテゴリを選ぶ;
+if (Webを選択?) then (yes)
+  :Webサーバ周辺へズーム;
+  :URL/HTTP/Header/Cookie/Resource/Auth/Input/Errorを展開;
+else (no)
+  :カテゴリ概要ノードを表示;
+  :v1では浅い入口説明を表示;
+endif
+:ノードの意図を読む;
+:見るべき違和感を確認;
+if (次ノードあり?) then (yes)
+  :関連ノードを選択;
+  :履歴に追加;
+else (no)
+  :カテゴリトップへ戻る;
+endif
+:学習履歴を見直す;
+stop
+@enduml
