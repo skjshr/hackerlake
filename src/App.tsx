@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Background,
-  Controls,
   Handle,
   Position,
   ReactFlow,
@@ -12,27 +11,12 @@ import {
 } from '@xyflow/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Activity,
-  ArrowLeft,
-  BookOpen,
-  Braces,
   Check,
-  Cpu,
-  FileSearch,
-  Globe2,
-  History,
-  Layers3,
-  LockKeyhole,
-  Network,
   Radar,
-  RotateCcw,
-  ShieldCheck,
   Siren,
   TerminalSquare,
-  Zap,
 } from 'lucide-react';
 import {
-  categories,
   getCategory,
   getNode,
   learningEdges,
@@ -41,22 +25,7 @@ import {
   type LearningNodeData,
 } from './data/knowledge';
 
-type HistoryItem = {
-  id: string;
-  title: string;
-  category: CategoryId;
-};
-
 type GateState = 'boot' | 'notice' | 'workspace';
-
-const categoryIcons: Record<CategoryId, typeof Globe2> = {
-  web: Globe2,
-  network: Network,
-  forensics: FileSearch,
-  crypto: LockKeyhole,
-  reverse: Cpu,
-  pwn: Braces,
-};
 
 function LearningNode({ data, selected }: NodeProps<Node<LearningNodeData>>) {
   const category = getCategory(data.category);
@@ -113,10 +82,7 @@ export function App() {
   const [agreed, setAgreed] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('web');
   const [selectedNodeId, setSelectedNodeId] = useState('web-root');
-  const [focusFlashKey, setFocusFlashKey] = useState(0);
-  const [history, setHistory] = useState<HistoryItem[]>([
-    { id: 'web-root', title: 'Web画面を表示', category: 'web' },
-  ]);
+  const [history, setHistory] = useState<string[]>(['web-root']);
   const [flow, setFlow] = useState<ReactFlowInstance<Node<LearningNodeData>, Edge> | null>(null);
 
   useEffect(() => {
@@ -136,7 +102,7 @@ export function App() {
   }, [agreed, gateState]);
 
   const selectedNode = getNode(selectedNodeId) ?? getNode('web-root')!;
-  const previousNodeId = history.length >= 2 ? history[history.length - 2].id : undefined;
+  const previousNodeId = history.length >= 2 ? history[history.length - 2] : undefined;
   const selectedRootId = getCategory(selectedCategory).rootNodeId;
   const nextChoiceIds = useMemo(() => new Set(selectedNode.data.next), [selectedNode.data.next]);
   const activeIds = useMemo(() => {
@@ -179,13 +145,11 @@ export function App() {
     (nodeId: string) => {
       const node = getNode(nodeId);
       if (!node) return;
-      setFocusFlashKey((current) => current + 1);
       setSelectedNodeId(nodeId);
       setSelectedCategory(node.data.category);
       setHistory((current) => {
-        const next = { id: nodeId, title: node.data.title, category: node.data.category };
-        if (current[current.length - 1]?.id === nodeId) return current;
-        return [...current.slice(-7), next];
+        if (current[current.length - 1] === nodeId) return current;
+        return [...current.slice(-7), nodeId];
       });
       requestAnimationFrame(() => {
         const corridor = getFlowWindowIds(nodeId, node.data.category, selectedNodeId).map((id) => ({
@@ -197,20 +161,6 @@ export function App() {
     [flow, selectedNodeId],
   );
 
-  const focusCategory = (categoryId: CategoryId) => {
-    const rootId = getCategory(categoryId).rootNodeId;
-    focusNode(rootId);
-  };
-
-  const resetView = () => {
-    setSelectedCategory('web');
-    focusNode('web-root');
-    requestAnimationFrame(() => {
-      const corridor = getFlowWindowIds('web-root', 'web').map((id) => ({ id }));
-      flow?.fitView({ nodes: corridor, duration: 600, padding: 0.18 });
-    });
-  };
-
   useEffect(() => {
     if (!flow || gateState !== 'workspace') return;
     const timer = window.setTimeout(() => {
@@ -219,6 +169,18 @@ export function App() {
     }, 120);
     return () => window.clearTimeout(timer);
   }, [flow, gateState, selectedCategory, selectedNodeId]);
+
+  useEffect(() => {
+    if (!flow || gateState !== 'workspace') return;
+    const onResize = () => {
+      const corridor = getFlowWindowIds(selectedNodeId, selectedCategory, previousNodeId).map((id) => ({
+        id,
+      }));
+      flow.fitView({ nodes: corridor, duration: 260, padding: 0.24 });
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [flow, gateState, previousNodeId, selectedCategory, selectedNodeId]);
 
   return (
     <div className="shell-root">
@@ -243,18 +205,6 @@ export function App() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.55, ease: [0.2, 0.9, 0.2, 1] }}
           >
-      <AnimatePresence>
-        {focusFlashKey > 0 && (
-          <motion.div
-            key={focusFlashKey}
-            className="focus-acquire-flash"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 0.9, 0.18, 0] }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.24, times: [0, 0.18, 0.42, 1] }}
-          />
-        )}
-      </AnimatePresence>
       <header className="topbar">
         <div className="brand">
           <span className="brand-mark">
@@ -262,54 +212,15 @@ export function App() {
           </span>
           <div>
             <strong>HackerLake</strong>
-            <span>observe / reason / decide</span>
           </div>
         </div>
-        <nav className="mode-tabs" aria-label="learning modes">
-          <span className="mode active">observe</span>
-          <span className="mode">reason</span>
-          <span className="mode">decide</span>
-        </nav>
-        <button className="ghost-button" onClick={resetView} type="button">
-          <RotateCcw size={16} />
-          Reset
-        </button>
       </header>
-
-      <aside className="category-rail">
-        <div className="panel-title">
-          <Layers3 size={16} />
-          <span>surface</span>
-        </div>
-        {categories.map((category) => {
-          const Icon = categoryIcons[category.id];
-          return (
-            <button
-              key={category.id}
-              className={`category-button ${selectedCategory === category.id ? 'active' : ''}`}
-              onClick={() => focusCategory(category.id)}
-              style={{ '--category-color': category.color } as React.CSSProperties}
-              type="button"
-            >
-              <Icon size={18} />
-              <span>
-                <strong>{category.title}</strong>
-                <small>{category.subtitle}</small>
-              </span>
-            </button>
-          );
-        })}
-      </aside>
 
       <main className="map-stage">
         <div className="stage-header">
           <div>
-            <span className="tiny-label">open state reading</span>
+            <span className="tiny-label">現在地: Web / 観察 / Step {selectedNode.data.level}</span>
             <h1>{selectedNode.data.title}</h1>
-          </div>
-          <div className="pulse-meter">
-            <Activity size={16} />
-            <span>depth {selectedNode.data.level} / live path</span>
           </div>
         </div>
         <ReactFlow
@@ -323,7 +234,6 @@ export function App() {
           maxZoom={1.6}
         >
           <Background color="#27405e" gap={28} size={1} />
-          <Controls showInteractive={false} />
         </ReactFlow>
       </main>
 
@@ -336,90 +246,51 @@ export function App() {
             exit={{ opacity: 0, x: -12 }}
             transition={{ duration: 0.18 }}
           >
-            <div className="detail-kicker">
-              <TerminalSquare size={16} />
-              <span>観察メモ</span>
-            </div>
-            <h2>{selectedNode.data.title}</h2>
+            <h2>なぜ見るか</h2>
             <p className="lead">{selectedNode.data.intent}</p>
 
-            <div className="detail-block">
-              <h3>確認ポイント</h3>
-              <ul>
-                {selectedNode.data.signals.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="detail-block">
-              <h3>見る札</h3>
+            <details className="detail-block">
+              <summary>どう見るか</summary>
               <div className="chips">
                 {selectedNode.data.observe.map((item) => (
                   <span key={item}>{item}</span>
                 ))}
               </div>
-            </div>
+            </details>
 
-            <div className="detail-block">
-              <h3>詳細な説明</h3>
+            <details className="detail-block">
+              <summary>条件が見えたら</summary>
+              <ul>
+                {selectedNode.data.signals.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </details>
+
+            <details className="detail-block">
+              <summary>詳しく読む</summary>
               <p>{selectedNode.data.details}</p>
-            </div>
+            </details>
 
-            <div className="safety-note">
-              <ShieldCheck size={15} />
-              {selectedNode.data.safety}
-            </div>
-
-            <div className="next-actions">
-              {selectedNode.data.next.length ? (
-                selectedNode.data.next.map((id) => {
-                  const node = getNode(id);
-                  if (!node) return null;
-                  return (
-                    <button key={id} onClick={() => focusNode(id)} type="button">
-                      {node.data.title}
-                    </button>
-                  );
-                })
-              ) : (
-                <button onClick={() => focusCategory(selectedCategory)} type="button">
-                  <ArrowLeft size={14} />
-                  面へ戻る
-                </button>
-              )}
-            </div>
+            {selectedNode.data.next.length > 0 && (
+              <details className="detail-block">
+                <summary>次に見る</summary>
+                <div className="next-actions">
+                  {selectedNode.data.next.map((id) => {
+                    const node = getNode(id);
+                    if (!node) return null;
+                    return (
+                      <button key={id} onClick={() => focusNode(id)} type="button">
+                        {node.data.title}
+                      </button>
+                    );
+                  })}
+                </div>
+              </details>
+            )}
           </motion.section>
         </AnimatePresence>
       </aside>
-
-      <footer className="history-strip">
-        <div className="panel-title">
-          <History size={16} />
-          <span>trail</span>
-        </div>
-        <div className="history-items">
-          {history.map((item, index) => (
-            <button
-              key={`${item.id}-${index}`}
-              onClick={() => focusNode(item.id)}
-              className={item.id === selectedNodeId ? 'active' : ''}
-              type="button"
-            >
-              <span>{index + 1}</span>
-              {item.title}
-            </button>
-          ))}
-        </div>
-        <div className="study-card">
-          <Zap size={15} />
-          <span>手札: {selectedNode.data.next.length || 'review'}</span>
-        </div>
-        <div className="study-card">
-          <BookOpen size={15} />
-          <span>field note 01</span>
-        </div>
-      </footer>
           </motion.div>
         )}
       </AnimatePresence>
