@@ -314,7 +314,7 @@ export function App() {
         const corridor = getFlowWindowIds(nodeId, node.data.category, selectedNodeId).map((id) => ({
           id,
         }));
-        flow?.fitView({ nodes: corridor, duration: 720, padding: 0.2 });
+        flow?.fitView({ nodes: corridor, duration: 1120, padding: 0.2 });
       });
     },
     [flow, selectedNodeId],
@@ -334,7 +334,7 @@ export function App() {
     if (!flow || gateState !== 'workspace') return;
     const timer = window.setTimeout(() => {
       const corridor = getFlowWindowIds(selectedNodeId, selectedCategory).map((id) => ({ id }));
-      flow.fitView({ nodes: corridor, duration: 700, padding: 0.18 });
+      flow.fitView({ nodes: corridor, duration: 900, padding: 0.18 });
     }, 120);
     return () => window.clearTimeout(timer);
   }, [flow, gateState, selectedCategory, selectedNodeId]);
@@ -345,7 +345,7 @@ export function App() {
       const corridor = getFlowWindowIds(selectedNodeId, selectedCategory, previousNodeId).map((id) => ({
         id,
       }));
-      flow.fitView({ nodes: corridor, duration: 260, padding: 0.24 });
+      flow.fitView({ nodes: corridor, duration: 420, padding: 0.24 });
     };
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
@@ -357,7 +357,7 @@ export function App() {
       const corridor = getFlowWindowIds(selectedNodeId, selectedCategory, previousNodeId).map((id) => ({
         id,
       }));
-      flow.fitView({ nodes: corridor, duration: 280, padding: detailDominant ? 0.28 : 0.18 });
+      flow.fitView({ nodes: corridor, duration: 620, padding: detailDominant ? 0.28 : 0.18 });
     }, 360);
     return () => window.clearTimeout(timer);
   }, [detailDominant, flow, gateState, previousNodeId, selectedCategory, selectedNodeId]);
@@ -479,7 +479,7 @@ export function App() {
             initial={{ opacity: 0, x: 16, filter: 'blur(10px)' }}
             animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
             exit={{ opacity: 0, x: -12, filter: 'blur(8px)' }}
-            transition={{ duration: 0.24, ease: [0.2, 0.9, 0.2, 1] }}
+            transition={{ duration: 0.46, ease: [0.2, 0.9, 0.2, 1] }}
           >
             <div className="detail-heading">
               <span>{selectedCategoryData.title} / {phaseUi[activePhase].label}</span>
