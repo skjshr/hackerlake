@@ -1,25 +1,26 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+JP:wght@400;500;600;700;800&family=Shippori+Mincho:wght@500;600;700&display=swap");
 
 :root {
-  color: #f0eadc;
-  background: #070706;
+  color: #2f2a22;
+  background: #f7f1e8;
   font-family: var(--font-ui);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  --ink: #070706;
-  --carbon: #12110e;
-  --panel: rgba(19, 18, 14, 0.9);
-  --panel-strong: rgba(26, 24, 19, 0.97);
-  --line: rgba(224, 214, 190, 0.16);
+  --ink: #2f2a22;
+  --carbon: #f7f1e8;
+  --panel: rgba(255, 252, 246, 0.9);
+  --panel-strong: rgba(255, 252, 246, 0.98);
+  --line: rgba(58, 48, 36, 0.14);
   --line-hot: rgba(138, 146, 121, 0.58);
-  --text: #f0eadc;
-  --muted: #aaa291;
+  --text: #2f2a22;
+  --muted: #746b5f;
   --green: #8a9279;
   --amber: #b48957;
   --cyan: #7d8f90;
   --red: #9b4b43;
-  --font-ui: "IBM Plex Sans JP", "Aptos", "Segoe UI Variable Text", "Yu Gothic UI", "Hiragino Kaku Gothic ProN", sans-serif;
+  --font-body: "IBM Plex Sans JP", "Aptos", "Segoe UI Variable Text", "Yu Gothic UI", "Hiragino Kaku Gothic ProN", sans-serif;
+  --font-ui: "Shippori Mincho", "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif;
   --font-display: "Shippori Mincho", "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif;
   --font-mono: "IBM Plex Mono", "UDEV Gothic", "Cascadia Mono", Consolas, monospace;
 }
@@ -2155,6 +2156,421 @@ button {
 .next-actions button strong {
   font-size: 12px;
   line-height: 1.35;
+}
+
+/* Claude-docs inspired reading skin for the learning app */
+.shell-root {
+  color: var(--ink);
+  background:
+    linear-gradient(90deg, rgba(58, 48, 36, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, #fbf7ef, #f4eadf);
+  background-size: 72px 100%, auto;
+}
+
+.ambient-grid,
+.signal-field {
+  display: none;
+}
+
+.category-gate {
+  background:
+    radial-gradient(circle at 84% 12%, rgba(138, 146, 121, 0.12), transparent 28%),
+    linear-gradient(180deg, #fbf7ef, #f4eadf);
+}
+
+.category-heading h1,
+.detail-panel h2,
+.stage-header h1,
+.brand strong,
+.learning-brief h3,
+.summary-label,
+.phase-track span,
+.genre-button,
+.connection-current span,
+.connection-current strong,
+.connection-next > span,
+.connection-next button,
+.detail-next-strip,
+.category-main,
+.category-card summary,
+.notice-shell h2,
+.enter-button {
+  font-family: var(--font-display);
+}
+
+.lead,
+.learning-brief p,
+.learning-brief li,
+.detail-block p,
+.detail-block li,
+.detail-explain-grid p,
+.detail-explain-grid li,
+.note-template p,
+.observe-list p,
+.inline-help p,
+.category-card p,
+.safety-note {
+  font-family: var(--font-body);
+}
+
+.category-shell {
+  width: min(1020px, 94vw);
+}
+
+.category-heading {
+  margin-bottom: 22px;
+}
+
+.category-heading h1 {
+  color: #342e26;
+  font-size: clamp(38px, 5vw, 68px);
+}
+
+.category-grid {
+  gap: 12px;
+}
+
+.category-card {
+  border: 1px solid rgba(58, 48, 36, 0.12);
+  border-left: 4px solid var(--node-color);
+  border-radius: 8px;
+  background: rgba(255, 252, 246, 0.92);
+  box-shadow: none;
+}
+
+.category-main {
+  min-height: 104px;
+  padding: 17px 18px 14px;
+  color: #302a22;
+  background: transparent;
+}
+
+.category-main:hover {
+  background: color-mix(in srgb, var(--node-color) 5%, transparent);
+  filter: none;
+}
+
+.category-main small {
+  color: color-mix(in srgb, var(--node-color) 72%, #5a5045);
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0;
+}
+
+.category-main strong {
+  color: #2d271f;
+  font-size: 25px;
+}
+
+.category-keywords {
+  gap: 10px;
+}
+
+.category-keywords span {
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  color: #6f675d;
+  background: transparent;
+  font-size: 12px;
+}
+
+.category-card details {
+  border-top: 1px solid rgba(58, 48, 36, 0.1);
+  padding: 0 18px 14px;
+}
+
+.category-card summary {
+  color: #3a3128;
+}
+
+.category-card p {
+  color: #665d52;
+}
+
+.app-shell {
+  grid-template-columns: minmax(300px, 40vw) minmax(560px, 60vw);
+  background: #fbf7ef;
+}
+
+.app-shell.detail-dominant {
+  grid-template-columns: minmax(280px, 32vw) minmax(660px, 68vw);
+}
+
+.topbar {
+  border-bottom: 1px solid rgba(58, 48, 36, 0.12);
+  background: rgba(255, 252, 246, 0.86);
+  backdrop-filter: blur(16px);
+}
+
+.brand-mark {
+  border-radius: 7px;
+  color: var(--theme-color);
+  clip-path: none;
+}
+
+.brand strong {
+  color: #2f2a22;
+}
+
+.phase-track span {
+  border-color: rgba(58, 48, 36, 0.12);
+  color: #796f63;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.phase-track span.active {
+  color: #2f2a22;
+  background: color-mix(in srgb, var(--theme-color) 14%, #fffaf2);
+}
+
+.genre-button {
+  border-color: rgba(58, 48, 36, 0.14);
+  color: #3b342b;
+  background: #fffaf2;
+}
+
+.map-stage {
+  border-right: 1px solid rgba(58, 48, 36, 0.1);
+  background:
+    linear-gradient(rgba(58, 48, 36, 0.04) 1px, transparent 1px),
+    #f7efe5;
+  background-size: 100% 34px;
+}
+
+.stage-header span,
+.detail-heading span {
+  color: color-mix(in srgb, var(--theme-color) 72%, #6e6256);
+}
+
+.stage-header h1 {
+  color: #2f2a22;
+}
+
+.connection-current,
+.connection-next,
+.learning-brief,
+.detail-next-strip,
+.detail-explain-grid,
+.note-template,
+.screen-mock {
+  border: 1px solid rgba(58, 48, 36, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 252, 246, 0.9);
+  box-shadow: none;
+}
+
+.connection-current,
+.connection-next {
+  backdrop-filter: blur(8px);
+}
+
+.connection-current {
+  border-left: 3px solid var(--theme-color);
+}
+
+.connection-current span,
+.connection-next > span,
+.detail-next-strip > span {
+  color: #7c7165;
+}
+
+.connection-current strong,
+.connection-next button,
+.detail-next-strip strong {
+  color: #302a22;
+}
+
+.connection-next button,
+.detail-next-strip button,
+.branch-cards button,
+.observe-list > li {
+  border-color: rgba(58, 48, 36, 0.1);
+  background: #fffaf2;
+  color: #302a22;
+}
+
+.react-flow {
+  background: transparent;
+}
+
+.react-flow__node .learning-node {
+  border: 1px solid rgba(58, 48, 36, 0.12);
+  border-left: 4px solid var(--node-color);
+  border-radius: 8px;
+  background: #fffaf2;
+  box-shadow: none;
+}
+
+.learning-node span {
+  color: #7d7368;
+}
+
+.learning-node strong {
+  color: #302a22;
+}
+
+.react-flow__edge-path {
+  stroke: rgba(58, 48, 36, 0.18);
+}
+
+.detail-panel {
+  border-left: 0;
+  background: #fbf7ef;
+}
+
+.detail-heading {
+  border-bottom: 1px solid rgba(58, 48, 36, 0.12);
+}
+
+.detail-panel h2 {
+  color: #2f2a22;
+}
+
+.lead {
+  color: #5a5147;
+}
+
+.learning-brief {
+  border-left: 4px solid var(--theme-color);
+}
+
+.learning-brief h3 {
+  color: #2f2a22;
+  font-size: 15px;
+}
+
+.learning-brief p,
+.learning-brief li,
+.detail-block p,
+.detail-block li,
+.detail-explain-grid p,
+.detail-explain-grid li,
+.note-template p,
+.observe-list p {
+  color: #50483f;
+}
+
+.takeaway-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.takeaway-list span {
+  padding-left: 12px;
+  border-left: 2px solid color-mix(in srgb, var(--theme-color) 52%, rgba(58, 48, 36, 0.18));
+  color: #3d352d;
+  font-family: var(--font-display);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.detail-block {
+  border-top: 1px solid rgba(58, 48, 36, 0.12);
+}
+
+.detail-block summary,
+.brief-more summary,
+.detail-explain-grid summary,
+.note-template summary,
+.screenshot-block summary,
+.inline-help summary {
+  color: #302a22;
+  font-family: var(--font-display);
+  font-size: 14px;
+}
+
+.summary-label {
+  display: inline-block;
+  line-height: 1.05;
+}
+
+.summary-label::first-letter {
+  color: color-mix(in srgb, var(--theme-color, var(--node-color)) 72%, #2f2a22);
+  font-size: 1.5em;
+  font-weight: 760;
+  line-height: 0.8;
+}
+
+.brief-more summary::first-letter,
+.detail-explain-grid summary::first-letter,
+.note-template summary::first-letter,
+.screenshot-block summary::first-letter,
+.detail-block summary::first-letter,
+.inline-help summary::first-letter,
+.category-card summary::first-letter {
+  font-size: inherit;
+}
+
+.detail-block[open],
+.detail-explain-grid details[open],
+.note-template[open],
+.screenshot-block[open],
+.category-card details[open] {
+  background: color-mix(in srgb, var(--theme-color) 5%, #fffaf2);
+}
+
+.doc-split {
+  display: grid;
+  gap: 12px;
+}
+
+.doc-split > div {
+  padding: 11px 12px;
+  border: 1px solid rgba(58, 48, 36, 0.1);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.46);
+}
+
+.doc-split strong,
+.observe-list strong,
+.branch-cards strong {
+  color: #302a22;
+  font-family: var(--font-display);
+}
+
+.risk-note,
+.safety-note {
+  border-left: 3px solid color-mix(in srgb, var(--theme-color) 70%, #b48957);
+  color: #5b5146 !important;
+  background: color-mix(in srgb, var(--theme-color) 7%, #fffaf2);
+}
+
+.decision-list {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding-left: 18px;
+}
+
+.screen-mock {
+  overflow: hidden;
+  margin: 8px 0 14px;
+}
+
+.screen-mock img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  background: #efe6da;
+}
+
+.screen-mock figcaption {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 10px 12px;
+  color: #5f554b;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.screen-mock figcaption strong {
+  color: color-mix(in srgb, var(--theme-color) 74%, #302a22);
+  font-family: var(--font-display);
 }
 
 @media (max-width: 1100px) {

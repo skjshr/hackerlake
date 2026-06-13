@@ -11,6 +11,12 @@ import {
 } from '@xyflow/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Radar, TerminalSquare } from 'lucide-react';
+import cryptoScreen from './assets/screens/crypto.webp';
+import forensicsScreen from './assets/screens/forensics.webp';
+import networkScreen from './assets/screens/network.webp';
+import pwnScreen from './assets/screens/pwn.webp';
+import reverseScreen from './assets/screens/reverse.webp';
+import webScreen from './assets/screens/web.webp';
 import {
   attackPhases,
   categories,
@@ -104,157 +110,73 @@ function LearningNode({ data }: NodeProps<Node<LearningNodeData>>) {
 const nodeTypes = { learning: LearningNode };
 const defaultCategory = categories[0]!;
 
-function ScreenshotMock({ node }: { node: LearningNodeData }) {
+const screenshotAssets: Record<CategoryId, { alt: string; src: string }> = {
+  web: { alt: 'Web CTFのブラウザと通信確認画面', src: webScreen },
+  network: { alt: 'ネットワークCTFの許可ラボ観察画面', src: networkScreen },
+  forensics: { alt: 'フォレンジックCTFの証拠ビューア画面', src: forensicsScreen },
+  crypto: { alt: '暗号CTFの問題文と比較メモ画面', src: cryptoScreen },
+  reverse: { alt: 'リバースCTFの解析ビュー画面', src: reverseScreen },
+  pwn: { alt: 'Pwn CTFのローカルデバッグ画面', src: pwnScreen },
+};
+
+function SummaryLabel({ children }: { children: string }) {
+  return <span className="summary-label">{children}</span>;
+}
+
+function getTakeaways(node: LearningNodeData) {
+  const first = node.observe[0]?.label ?? '見る対象';
+  const second = node.observe[1]?.label ?? '根拠';
+  return [
+    `${first}を入口として説明できる`,
+    `${second}を根拠としてメモできる`,
+    `次に進むか戻るかを自分で選べる`,
+  ];
+}
+
+function getExampleItems(node: LearningNodeData) {
   const first = node.observe[0];
   const second = node.observe[1];
-  const third = node.observe[2];
+  return [
+    first ? `例: ${first.label}を見るなら「${compactText(first.how)}」まで確認する` : `例: ${node.title}を一つ選び、見えた事実だけを書く`,
+    second ? `次: ${second.label}も同じ説明でつながるか見る` : '次: 同じ観察を別の場所でもう一度確認する',
+    `メモ: ${compactText(node.intent)}`,
+  ];
+}
 
-  if (node.category === 'web') {
-    return (
-      <div className="screen-mock screen-web" aria-label="Web画面例">
-        <div className="screen-toolbar">
-          <i />
-          <i />
-          <i />
-          <span>https://ctf-lab.local/app</span>
-        </div>
-        <div className="web-layout">
-          <nav>
-            <strong>CTF Shop</strong>
-            <span>Home</span>
-            <span>Login</span>
-            <span>Upload</span>
-          </nav>
-          <main>
-            <section>
-              <div className="shop-hero">
-                <span>guest session</span>
-                <strong>{node.title}</strong>
-              </div>
-              <label>Search</label>
-              <div className="fake-input">?q=guest&amp;sort=recent</div>
-              <div className="web-table">
-                <span>GET /app</span>
-                <span>200</span>
-                <span>Set-Cookie</span>
-                <span>session=eyJ...</span>
-              </div>
-            </section>
-            <aside>
-              <b>Headers</b>
-              <span>Cookie: session=...</span>
-              <span>Status: 200</span>
-              <span>Method: GET</span>
-              <span>Content-Type: json</span>
-            </aside>
-          </main>
-        </div>
-      </div>
-    );
-  }
+function getRiskText(node: LearningNodeData) {
+  return `${node.title}を飛ばすと、脆弱性名やツール名だけを追って、なぜその選択をしたのか説明できなくなる`;
+}
 
-  if (node.category === 'network') {
-    return (
-      <div className="screen-mock screen-terminal" aria-label="ネットワーク画面例">
-        <div className="screen-toolbar">
-          <i />
-          <i />
-          <i />
-          <span>ラボ端末</span>
-        </div>
-        <div className="terminal-lines">
-          <p><span>$</span> observe lab-network --scope allowed</p>
-          <p>10.10.0.12  host-a.lab  http  open  ttl=63</p>
-          <p>10.10.0.21  host-b.lab  ssh   filtered</p>
-          <p>10.10.0.40  admin.lab   dns   internal</p>
-          <p className="screen-callout">見る点: {first?.label ?? node.title}</p>
-        </div>
-      </div>
-    );
-  }
+function getObserveExample(item: LearningNodeData['observe'][number]) {
+  return `見える例: ${compactText(item.what)} / 確認: ${compactText(item.how)}`;
+}
 
-  if (node.category === 'forensics') {
-    return (
-      <div className="screen-mock screen-forensics" aria-label="フォレンジック画面例">
-        <div className="screen-toolbar">
-          <i />
-          <i />
-          <i />
-          <span>case.zip / 証拠ビューア</span>
-        </div>
-        <div className="evidence-grid">
-          <div>
-            <span className="active">image001.png</span>
-            <span>access.log</span>
-            <span>capture.pcap</span>
-            <span>timeline.csv</span>
-          </div>
-          <pre>0000  89 50 4e 47 0d 0a 1a 0a{"\n"}0010  49 48 44 52 00 00 03 20{"\n"}0020  hidden chunk: {node.title.slice(0, 18)}{"\n"}0030  modified: 2026-06-13 22:14</pre>
-        </div>
-      </div>
-    );
-  }
+function getObserveNextHint(item: LearningNodeData['observe'][number], node: LearningNodeData) {
+  return `${item.label}が説明できたら、${node.branches[0]?.signal ?? '次の候補'}を探す 説明できなければ前の画面や問題文へ戻る`;
+}
 
-  if (node.category === 'crypto') {
-    return (
-      <div className="screen-mock screen-crypto" aria-label="暗号画面例">
-        <div className="screen-toolbar">
-          <i />
-          <i />
-          <i />
-          <span>problem.txt / 問題文</span>
-        </div>
-        <div className="crypto-paper">
-          <p>ciphertext_1 = 6f 2a 90 c1 42 11 ...</p>
-          <p>ciphertext_2 = 6f 2a 91 54 42 10 ...</p>
-          <p>hint = same prefix / same length</p>
-          <div>
-            <span>len: 64</span>
-            <span>repeat: 6f 2a</span>
-            <span>{first?.label ?? node.title}</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
+function getLogExample(node: LearningNodeData) {
+  const first = node.observe[0];
+  return {
+    seen: first ? `${node.title} / ${first.label}` : node.title,
+    learned: first ? compactText(first.what) : compactText(node.summary),
+    unknown: node.observe[1]?.label ?? 'まだ根拠が薄い点',
+    next: node.branches[0]?.action ?? '次のノードで同じ根拠が通るか確認する',
+  };
+}
 
-  if (node.category === 'reverse') {
-    return (
-      <div className="screen-mock screen-reverse" aria-label="リバース画面例">
-        <div className="screen-toolbar">
-          <i />
-          <i />
-          <i />
-          <span>文字列一覧 / sample.bin</span>
-        </div>
-        <div className="reverse-columns">
-          <pre>00401210  call read_input{"\n"}00401248  cmp eax, 0x23{"\n"}00401252  jne fail{"\n"}00401302  success</pre>
-          <div>
-            <span className="active">{first?.label ?? node.title}</span>
-            <span>{second?.label ?? '入力の流れ'}</span>
-            <span>{third?.label ?? '分岐の位置'}</span>
-            <span>strings: success / invalid</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
+function ScreenshotMock({ node }: { node: LearningNodeData }) {
+  const asset = screenshotAssets[node.category];
+  const first = node.observe[0];
 
   return (
-    <div className="screen-mock screen-pwn" aria-label="Pwn画面例">
-      <div className="screen-toolbar">
-        <i />
-        <i />
-        <i />
-        <span>デバッガ / ローカルラボ</span>
-      </div>
-      <div className="pwn-debug">
-        <p>RIP  0x0000000000401234</p>
-        <p>RSP  0x00007fffffffe2b0</p>
-        <p>input 64 bytes / crash reproducible</p>
-        <p className="screen-callout">見る点: {first?.label ?? node.title}</p>
-      </div>
-    </div>
+    <figure className="screen-mock">
+      <img alt={asset.alt} decoding="async" loading="lazy" src={asset.src} />
+      <figcaption>
+        <strong>見る点</strong>
+        <span>{first?.label ?? node.title}</span>
+      </figcaption>
+    </figure>
   );
 }
 
@@ -375,6 +297,7 @@ export function App() {
     [connectionChoices, selectedNode.data],
   );
   const firstSteps = selectedNode.data.observe.slice(0, 3);
+  const logExample = getLogExample(selectedNode.data);
 
   const focusNode = useCallback(
     (nodeId: string) => {
@@ -567,8 +490,13 @@ export function App() {
             <section className="learning-brief">
               <h3>ゴール</h3>
               <p>{phaseUi[activePhase].guide}</p>
+              <div className="takeaway-list" aria-label="このノードで増える手札">
+                {getTakeaways(selectedNode.data).map((item) => (
+                  <span key={item}>{item}</span>
+                ))}
+              </div>
               <details className="brief-more">
-                <summary>最初の3手</summary>
+                <summary><SummaryLabel>最初の3手</SummaryLabel></summary>
                 <p>{compactText(selectedNode.data.intent)}</p>
                 <ol>
                   {firstSteps.map((item) => (
@@ -579,30 +507,50 @@ export function App() {
             </section>
 
             <details className="screenshot-block">
-              <summary>画面例を見る</summary>
+              <summary><SummaryLabel>画面例を見る</SummaryLabel></summary>
               <ScreenshotMock node={selectedNode.data} />
             </details>
 
             <details className="detail-block">
-              <summary>何それ？</summary>
-              <p>{selectedNode.data.what}</p>
+              <summary><SummaryLabel>何それ？</SummaryLabel></summary>
+              <div className="doc-split">
+                <div>
+                  <strong>定義</strong>
+                  <p>{selectedNode.data.what}</p>
+                </div>
+                <div>
+                  <strong>例</strong>
+                  <ul>
+                    {getExampleItems(selectedNode.data).map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <strong>よくある勘違い</strong>
+                  <p>見えている単語やツール名だけで判断しない。何を見て、何が根拠で、次にどこへ進むかを分ける</p>
+                </div>
+              </div>
             </details>
 
             <details className="detail-block">
-              <summary>なぜ見るか</summary>
+              <summary><SummaryLabel>なぜ見るか</SummaryLabel></summary>
               <p>{compactText(selectedNode.data.intent)}</p>
+              <p className="risk-note">{getRiskText(selectedNode.data)}</p>
             </details>
 
             <details className="detail-block">
-              <summary>どう見るか</summary>
+              <summary><SummaryLabel>どう見るか</SummaryLabel></summary>
               <ol className="observe-list">
                 {selectedNode.data.observe.slice(0, 4).map((item) => (
                   <li key={item.label}>
                     <strong>{item.label}</strong>
                     <p>{compactText(item.how)}</p>
                     <details className="inline-help">
-                      <summary>何それ？</summary>
+                      <summary><SummaryLabel>何それ？</SummaryLabel></summary>
                       <p>{compactText(item.what)}</p>
+                      <p>{getObserveExample(item)}</p>
+                      <p>{getObserveNextHint(item, selectedNode.data)}</p>
                     </details>
                   </li>
                 ))}
@@ -611,14 +559,35 @@ export function App() {
 
             <section className="detail-explain-grid">
               <details>
-                <summary>ミニ例</summary>
+                <summary><SummaryLabel>ミニ例</SummaryLabel></summary>
                 <p>{getMiniExample(selectedNode.data)}</p>
               </details>
               <details>
-                <summary>判断基準</summary>
+                <summary><SummaryLabel>判断基準</SummaryLabel></summary>
                 <p>{getDecisionText(selectedNode.data)}</p>
+                <ul className="decision-list">
+                  <li>進む: 見たもの、分かったこと、次に見る理由を一文で言える</li>
+                  <li>戻る: どの画面、通信、ファイル、ログを根拠にしたか説明できない</li>
+                  <li>分岐: 条件が見えたら、下の「条件が見えたら」から近いノードへ進む</li>
+                </ul>
               </details>
             </section>
+
+            <details className="detail-block">
+              <summary><SummaryLabel>どうなっていたら選択肢が増えるか</SummaryLabel></summary>
+              <ul>
+                {selectedNode.data.branches.length > 0 ? (
+                  selectedNode.data.branches.map((branch) => (
+                    <li key={`${branch.signal}-choice`}>
+                      <strong>{branch.signal}</strong>
+                      <span>{branch.action}</span>
+                    </li>
+                  ))
+                ) : (
+                  <li>同じ観察を別の場所でも説明できたら、次の段階へ進む</li>
+                )}
+              </ul>
+            </details>
 
             <section className="detail-next-strip" aria-label="next learning nodes">
               <span>おすすめの次</span>
@@ -634,7 +603,7 @@ export function App() {
 
             {selectedNode.data.branches.length > 0 && (
               <details className="detail-block">
-                <summary>条件が見えたら</summary>
+                <summary><SummaryLabel>条件が見えたら</SummaryLabel></summary>
                 <div className="branch-cards">
                   {selectedNode.data.branches.map((branch) => {
                     const targetNode = getNode(branch.targetId);
@@ -656,17 +625,17 @@ export function App() {
             )}
 
             <details className="detail-block">
-              <summary>詳しく読む</summary>
+              <summary><SummaryLabel>詳しく読む</SummaryLabel></summary>
               <p>{selectedNode.data.details}</p>
               <p className="safety-note">{selectedNode.data.safety}</p>
             </details>
 
             <details className="note-template">
-              <summary>観察ログ</summary>
-              <p>見たもの: ______</p>
-              <p>分かったこと: ______</p>
-              <p>まだ不明なこと: ______</p>
-              <p>次に確認すること: ______</p>
+              <summary><SummaryLabel>観察ログ</SummaryLabel></summary>
+              <p>見たもの: {logExample.seen}</p>
+              <p>分かったこと: {logExample.learned}</p>
+              <p>まだ不明なこと: {logExample.unknown}</p>
+              <p>次に確認すること: {logExample.next}</p>
             </details>
           </motion.section>
       </aside>
@@ -711,7 +680,7 @@ function CategoryGate({ onSelect }: CategoryGateProps) {
                 </span>
               </button>
               <details>
-                <summary>何それ？</summary>
+                <summary><SummaryLabel>何それ？</SummaryLabel></summary>
                 <p>{category.what}</p>
               </details>
             </article>
