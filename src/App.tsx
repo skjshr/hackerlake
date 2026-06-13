@@ -253,6 +253,7 @@ export function App() {
   const [selectedNodeId, setSelectedNodeId] = useState(defaultCategory.rootNodeId);
   const [history, setHistory] = useState<string[]>([defaultCategory.rootNodeId]);
   const [flow, setFlow] = useState<ReactFlowInstance<Node<LearningNodeData>, Edge> | null>(null);
+  const [detailDominant, setDetailDominant] = useState(false);
 
   useEffect(() => {
     if (gateState !== 'notice') return;
@@ -335,6 +336,7 @@ export function App() {
       if (!node) return;
       setSelectedNodeId(nodeId);
       setSelectedCategory(node.data.category);
+      setDetailDominant(true);
       setHistory((current) => {
         if (current[current.length - 1] === nodeId) return current;
         return [...current.slice(-7), nodeId];
@@ -354,6 +356,7 @@ export function App() {
     setSelectedCategory(categoryId);
     setSelectedNodeId(category.rootNodeId);
     setHistory([category.rootNodeId]);
+    setDetailDominant(false);
     setGateState('workspace');
     window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'auto' }));
   }, []);
@@ -378,6 +381,17 @@ export function App() {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, [flow, gateState, previousNodeId, selectedCategory, selectedNodeId]);
+
+  useEffect(() => {
+    if (!flow || gateState !== 'workspace') return;
+    const timer = window.setTimeout(() => {
+      const corridor = getFlowWindowIds(selectedNodeId, selectedCategory, previousNodeId).map((id) => ({
+        id,
+      }));
+      flow.fitView({ nodes: corridor, duration: 280, padding: detailDominant ? 0.28 : 0.18 });
+    }, 360);
+    return () => window.clearTimeout(timer);
+  }, [detailDominant, flow, gateState, previousNodeId, selectedCategory, selectedNodeId]);
 
   useEffect(() => {
     if (gateState !== 'workspace') return;
@@ -406,7 +420,9 @@ export function App() {
         {gateState === 'category' && <CategoryGate onSelect={chooseCategory} />}
         {gateState === 'workspace' && (
           <motion.div
-            className={`app-shell ${selectedNodeId !== selectedRootId ? 'has-selected-focus' : ''}`}
+            className={`app-shell ${selectedNodeId !== selectedRootId ? 'has-selected-focus' : ''} ${
+              detailDominant ? 'detail-dominant' : ''
+            }`}
             initial={false}
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0 }}
