@@ -24,16 +24,25 @@ import {
 
 type GateState = 'notice' | 'category' | 'workspace';
 
-function LearningNode({ data, selected }: NodeProps<Node<LearningNodeData>>) {
+const phaseGuides = {
+  偵察: '対象を壊さず眺めて、何が入力で、何が出力で、どこまで見てよいかを決める段階。',
+  列挙: '見つけた入口を種類別に並べ、次に深く見る候補を選べる状態にする段階。',
+  侵入: '突破手順ではなく、入口仮説が本当に成り立つかを許可範囲で検証する段階。',
+  権限昇格: 'より強い権限、より深い条件、より大きな影響へつながる境界を読む段階。',
+  '維持・痕跡消去': '隠蔽手順ではなく、何が残り、どう記録し、どう防御・復習へ戻すかを見る段階。',
+} as const;
+
+function LearningNode({ data }: NodeProps<Node<LearningNodeData>>) {
   const category = getCategory(data.category);
 
   return (
     <div
-      className={`learning-node level-${data.level} ${selected ? 'selected' : ''}`}
+      className={`learning-node level-${data.level}`}
       style={{ '--node-color': category.color } as React.CSSProperties}
     >
       <Handle className="node-handle node-handle-target" position={Position.Left} type="target" />
       <Handle className="node-handle node-handle-source" position={Position.Right} type="source" />
+      <span>{data.phase}</span>
       <strong>{data.title}</strong>
     </div>
   );
@@ -86,9 +95,10 @@ export function App() {
   }, [agreed, gateState]);
 
   const selectedNode = getNode(selectedNodeId) ?? getNode(defaultCategory.rootNodeId)!;
+  const selectedCategoryData = getCategory(selectedCategory);
   const activePhase = selectedNode.data.phase;
   const previousNodeId = history.length >= 2 ? history[history.length - 2] : undefined;
-  const selectedRootId = getCategory(selectedCategory).rootNodeId;
+  const selectedRootId = selectedCategoryData.rootNodeId;
   const fallbackNextIds = useMemo(
     () => Array.from(new Set([previousNodeId, selectedRootId].filter(Boolean))) as string[],
     [previousNodeId, selectedRootId],
@@ -105,7 +115,7 @@ export function App() {
         .filter((node) => activeIds.has(node.id))
         .map((node) => ({
           ...node,
-          selected: node.id === selectedNodeId,
+          selected: false,
           data: node.data,
           className:
             node.id === selectedNodeId
@@ -127,8 +137,16 @@ export function App() {
             edge.source === selectedNodeId || edge.target === selectedNodeId
               ? 'edge-hot'
               : 'edge-calm',
-        })),
+      })),
     [activeIds, selectedNodeId],
+  );
+
+  const connectionChoices = useMemo(
+    () =>
+      displayedNextIds
+        .map((id) => getNode(id))
+        .filter((node): node is Node<LearningNodeData> => Boolean(node)),
+    [displayedNextIds],
   );
 
   const focusNode = useCallback(
@@ -238,7 +256,25 @@ export function App() {
       <main className="map-stage">
         <div className="stage-header">
           <div>
+            <span>{selectedCategoryData.title} / {activePhase}</span>
             <h1>{selectedNode.data.title}</h1>
+          </div>
+        </div>
+        <div className="connection-rail" aria-label="node connections">
+          <div className="connection-current">
+            <span>今見ている</span>
+            <strong>{selectedNode.data.title}</strong>
+          </div>
+          <div className="connection-next">
+            <span>次に進める</span>
+            <div>
+              {connectionChoices.map((node) => (
+                <button key={node.id} onClick={() => focusNode(node.id)} type="button">
+                  <em>{node.data.phase}</em>
+                  {node.data.title}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <ReactFlow
@@ -248,6 +284,12 @@ export function App() {
           onInit={setFlow}
           onNodeClick={(_, node) => focusNode(node.id)}
           fitView
+          elementsSelectable={false}
+          nodesConnectable={false}
+          nodesDraggable={false}
+          multiSelectionKeyCode={null}
+          selectionKeyCode={null}
+          selectNodesOnDrag={false}
           minZoom={0.45}
           maxZoom={1.6}
         >
@@ -264,16 +306,35 @@ export function App() {
             transition={{ duration: 0.18 }}
           >
             <div className="detail-heading">
+              <span>{selectedCategoryData.title} / {activePhase}</span>
               <h2>{selectedNode.data.title}</h2>
               <p className="lead">{selectedNode.data.summary}</p>
             </div>
 
-            <details className="detail-block">
+            <section className="learning-brief">
+              <h3>この段階で判断すること</h3>
+              <p>{phaseGuides[activePhase]}</p>
+              <p>{selectedNode.data.intent}</p>
+            </section>
+
+            <section className="detail-next-strip" aria-label="next learning nodes">
+              <span>次に進める</span>
+              <div>
+                {connectionChoices.map((node) => (
+                  <button key={node.id} onClick={() => focusNode(node.id)} type="button">
+                    <em>{node.data.phase}</em>
+                    <strong>{node.data.title}</strong>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <details className="detail-block" open>
               <summary>何それ？</summary>
               <p>{selectedNode.data.what}</p>
             </details>
 
-            <details className="detail-block">
+            <details className="detail-block" open>
               <summary>なぜ見るか</summary>
               <p>{selectedNode.data.intent}</p>
             </details>
@@ -317,20 +378,20 @@ export function App() {
               </details>
             )}
 
-            <details className="detail-block">
+            <details className="detail-block" open>
               <summary>詳しく読む</summary>
               <p>{selectedNode.data.details}</p>
+              <p className="safety-note">{selectedNode.data.safety}</p>
             </details>
 
-            <details className="detail-block">
+            <details className="detail-block" open>
               <summary>次に見る</summary>
               <div className="next-actions">
-                {displayedNextIds.map((id) => {
-                  const node = getNode(id);
-                  if (!node) return null;
+                {connectionChoices.map((node) => {
                   return (
-                    <button key={id} onClick={() => focusNode(id)} type="button">
-                      {node.data.title}
+                    <button key={node.id} onClick={() => focusNode(node.id)} type="button">
+                      <span>{node.data.phase}</span>
+                      <strong>{node.data.title}</strong>
                     </button>
                   );
                 })}
