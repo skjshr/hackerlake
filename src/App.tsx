@@ -113,6 +113,7 @@ export function App() {
   const [agreed, setAgreed] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('web');
   const [selectedNodeId, setSelectedNodeId] = useState('web-root');
+  const [focusFlashKey, setFocusFlashKey] = useState(0);
   const [history, setHistory] = useState<HistoryItem[]>([
     { id: 'web-root', title: 'Web画面を表示', category: 'web' },
   ]);
@@ -178,6 +179,7 @@ export function App() {
     (nodeId: string) => {
       const node = getNode(nodeId);
       if (!node) return;
+      setFocusFlashKey((current) => current + 1);
       setSelectedNodeId(nodeId);
       setSelectedCategory(node.data.category);
       setHistory((current) => {
@@ -235,12 +237,24 @@ export function App() {
         {gateState === 'workspace' && (
           <motion.div
             key="workspace"
-            className="app-shell"
+            className={`app-shell ${selectedNodeId !== selectedRootId ? 'has-selected-focus' : ''}`}
             initial={{ opacity: 0, scale: 0.985, filter: 'blur(10px)' }}
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.55, ease: [0.2, 0.9, 0.2, 1] }}
           >
+      <AnimatePresence>
+        {focusFlashKey > 0 && (
+          <motion.div
+            key={focusFlashKey}
+            className="focus-acquire-flash"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.9, 0.18, 0] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.24, times: [0, 0.18, 0.42, 1] }}
+          />
+        )}
+      </AnimatePresence>
       <header className="topbar">
         <div className="brand">
           <span className="brand-mark">
@@ -424,10 +438,26 @@ function BootScreen() {
     >
       <div className="boot-frame">
         <div className="boot-noise" />
+        <div className="boot-reticle">
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
+        <div className="boot-status boot-status-left">
+          <span>NOW LOADING</span>
+          <strong>HACKERLAKE</strong>
+          <small>TRAINING MODE</small>
+        </div>
+        <div className="boot-status boot-status-right">
+          <span>SYSTEM</span>
+          <strong>LOCAL</strong>
+          <small>NO NETWORK ACTION</small>
+        </div>
         <div className="boot-code">
-          <span>init: self-audit</span>
-          <span>map: dormant</span>
-          <span>ethics: required</span>
+          <span>BOOTING</span>
+          <span>LOADING DATA</span>
+          <span>CHECKING NOTICE</span>
         </div>
         <motion.h1
           initial={{ opacity: 0, letterSpacing: '0.18em', y: 12 }}
@@ -443,6 +473,7 @@ function BootScreen() {
         >
           by skjshr
         </motion.p>
+        <div className="boot-coordinates">NOTICE REQUIRED / LOADING</div>
         <div className="boot-loader" aria-label="loading">
           <span />
         </div>
@@ -469,12 +500,18 @@ function NoticeGate({ agreed, onAgreedChange, onEnter }: NoticeGateProps) {
       <div className="notice-shell">
         <div className="notice-status">
           <Siren size={18} />
-          <span>LEGAL BOUNDARY CHECK</span>
+          <span>CAUTION / RULES OF ENGAGEMENT</span>
         </div>
-        <h1>許可のない対象には触れない</h1>
+        <h1>CAUTION</h1>
+        <h2>許可のない対象には触れない</h2>
         <p>
           HackerLakeは、攻撃手順を配るサイトではありません。CTFと自分の検証環境で、状況を読み、次の一手を選ぶための訓練用UIです。
         </p>
+        <div className="notice-directives" aria-label="directives">
+          <span>AUTHORIZED AREA ONLY</span>
+          <span>NO REAL TARGETS</span>
+          <span>TRAINING USE</span>
+        </div>
         <div className="notice-list">
           <span>許可されていない対象については、スキャンだけでも法律や規約に抵触する可能性があります。</span>
           <span>不正アクセス、侵入、実サービスへの試行を推奨するものではありません。</span>
