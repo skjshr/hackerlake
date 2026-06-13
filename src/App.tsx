@@ -39,6 +39,9 @@ function LearningNode({ data, selected }: NodeProps<Node<LearningNodeData>>) {
 
 const nodeTypes = { learning: LearningNode };
 
+const attackPhases = ['偵察', '列挙', '侵入', '権限昇格', '維持・痕跡消去'] as const;
+const activePhase = '偵察';
+
 function getFlowWindowIds(nodeId: string, categoryId: CategoryId, previousId?: string) {
   const rootId = getCategory(categoryId).rootNodeId;
   const rootNode = getNode(rootId);
@@ -90,6 +93,11 @@ export function App() {
   const selectedNode = getNode(selectedNodeId) ?? getNode('web-root')!;
   const previousNodeId = history.length >= 2 ? history[history.length - 2] : undefined;
   const selectedRootId = getCategory(selectedCategory).rootNodeId;
+  const fallbackNextIds = useMemo(
+    () => Array.from(new Set([previousNodeId, selectedRootId].filter(Boolean))) as string[],
+    [previousNodeId, selectedRootId],
+  );
+  const displayedNextIds = selectedNode.data.next.length > 0 ? selectedNode.data.next : fallbackNextIds;
   const nextChoiceIds = useMemo(() => new Set(selectedNode.data.next), [selectedNode.data.next]);
   const activeIds = useMemo(() => {
     return new Set(getFlowWindowIds(selectedNodeId, selectedCategory, previousNodeId));
@@ -200,12 +208,18 @@ export function App() {
             <strong>HackerLake</strong>
           </div>
         </div>
+        <div className="phase-track" aria-label="hacking phases">
+          {attackPhases.map((phase) => (
+            <span key={phase} className={phase === activePhase ? 'active' : ''}>
+              {phase}
+            </span>
+          ))}
+        </div>
       </header>
 
       <main className="map-stage">
         <div className="stage-header">
           <div>
-            <span className="tiny-label">偵察</span>
             <h1>{selectedNode.data.title}</h1>
           </div>
         </div>
@@ -235,22 +249,35 @@ export function App() {
             <h2>なぜ見るか</h2>
             <p className="lead">{selectedNode.data.intent}</p>
 
-            <details className="detail-block">
+            <details className="detail-block" open>
               <summary>どう見るか</summary>
-              <div className="chips">
-                {selectedNode.data.observe.map((item) => (
-                  <span key={item}>{item}</span>
+              <ol className="simple-steps">
+                {selectedNode.data.observe.slice(0, 4).map((item) => (
+                  <li key={item}>{item}</li>
                 ))}
-              </div>
+              </ol>
             </details>
 
             <details className="detail-block">
               <summary>条件が見えたら</summary>
-              <ul>
-                {selectedNode.data.signals.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
+              <div className="branch-cards">
+                {selectedNode.data.signals.map((item, index) => {
+                  const targetId = displayedNextIds[index % Math.max(displayedNextIds.length, 1)];
+                  const targetNode = targetId ? getNode(targetId) : undefined;
+                  return (
+                    <button
+                      key={item}
+                      disabled={!targetNode}
+                      onClick={() => targetNode && focusNode(targetNode.id)}
+                      type="button"
+                    >
+                      <span>もし</span>
+                      <strong>{item}</strong>
+                      <em>{targetNode ? `${targetNode.data.title}へ` : '観察メモに残す'}</em>
+                    </button>
+                  );
+                })}
+              </div>
             </details>
 
             <details className="detail-block">
@@ -258,22 +285,20 @@ export function App() {
               <p>{selectedNode.data.details}</p>
             </details>
 
-            {selectedNode.data.next.length > 0 && (
-              <details className="detail-block">
-                <summary>次に見る</summary>
-                <div className="next-actions">
-                  {selectedNode.data.next.map((id) => {
-                    const node = getNode(id);
-                    if (!node) return null;
-                    return (
-                      <button key={id} onClick={() => focusNode(id)} type="button">
-                        {node.data.title}
-                      </button>
-                    );
-                  })}
-                </div>
-              </details>
-            )}
+            <details className="detail-block">
+              <summary>次に見る</summary>
+              <div className="next-actions">
+                {displayedNextIds.map((id) => {
+                  const node = getNode(id);
+                  if (!node) return null;
+                  return (
+                    <button key={id} onClick={() => focusNode(id)} type="button">
+                      {node.data.title}
+                    </button>
+                  );
+                })}
+              </div>
+            </details>
           </motion.section>
         </AnimatePresence>
       </aside>

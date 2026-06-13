@@ -546,7 +546,7 @@ button {
   display: grid;
   width: 100%;
   grid-template-columns: minmax(0, 1fr) minmax(340px, 390px);
-  grid-template-rows: 58px minmax(0, 1fr);
+  grid-template-rows: 76px minmax(0, 1fr);
   height: 100vh;
 }
 
@@ -556,7 +556,7 @@ button {
   grid-column: 1 / 3;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 18px;
   padding: 0 22px;
   border-bottom: 1px solid var(--line);
@@ -566,6 +566,7 @@ button {
 
 .brand {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: 12px;
 }
@@ -591,6 +592,44 @@ button {
   color: var(--muted);
   font-family: "Cascadia Mono", Consolas, monospace;
   font-size: 11px;
+}
+
+.phase-track {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  max-width: 760px;
+}
+
+.phase-track span {
+  display: grid;
+  min-height: 38px;
+  place-items: center;
+  border: 1px solid rgba(213, 255, 244, 0.09);
+  border-radius: 4px;
+  color: rgba(210, 218, 212, 0.34);
+  background: rgba(255, 255, 255, 0.025);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
+  transition:
+    transform 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    opacity 180ms ease;
+}
+
+.phase-track span.active {
+  transform: scale(1.08);
+  border-color: rgba(42, 255, 190, 0.5);
+  color: #eafff8;
+  background:
+    linear-gradient(180deg, rgba(42, 255, 190, 0.16), rgba(42, 255, 190, 0.045)),
+    rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 22px rgba(42, 255, 190, 0.12);
 }
 
 .next-actions button {
@@ -886,6 +925,75 @@ button {
   clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 0 100%);
 }
 
+.simple-steps {
+  display: grid;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.simple-steps li {
+  padding: 10px 11px;
+  border: 1px solid rgba(213, 255, 244, 0.1);
+  border-radius: 4px;
+  color: #dce5de;
+  background: rgba(255, 255, 255, 0.026);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.branch-cards {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.branch-cards button {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid rgba(213, 255, 244, 0.12);
+  border-radius: 4px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.026);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.branch-cards button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(42, 255, 190, 0.36);
+  background: rgba(42, 255, 190, 0.055);
+}
+
+.branch-cards button:disabled {
+  cursor: default;
+  opacity: 0.68;
+}
+
+.branch-cards span,
+.branch-cards em {
+  color: var(--muted);
+  font-size: 11px;
+  font-style: normal;
+}
+
+.branch-cards strong {
+  color: #e5ece7;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.branch-cards em {
+  color: var(--green);
+}
+
 .next-actions {
   display: grid;
   grid-template-columns: 1fr;
@@ -909,7 +1017,7 @@ button {
 
   .app-shell {
     grid-template-columns: 1fr;
-    grid-template-rows: 58px 58vh auto;
+    grid-template-rows: 110px auto 52vh;
     width: 100%;
     min-height: 100vh;
     height: auto;
@@ -925,10 +1033,12 @@ button {
   .topbar {
     position: sticky;
     top: 0;
+    flex-direction: column;
+    align-items: stretch;
     justify-content: flex-start;
-    gap: 8px;
+    gap: 10px;
     width: 100vw;
-    height: 58px;
+    height: auto;
     padding: 12px;
     overflow: hidden;
   }
@@ -937,10 +1047,33 @@ button {
     max-width: calc(100vw - 72px);
   }
 
+  .phase-track {
+    display: flex;
+    max-width: none;
+    width: 100%;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 4px 4px;
+    scrollbar-width: none;
+  }
+
+  .phase-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .phase-track span {
+    flex: 0 0 auto;
+    min-width: 94px;
+    min-height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
   .map-stage {
-    grid-row: 2;
+    grid-row: 3;
     width: 100vw;
-    min-height: 58vh;
+    min-height: 52vh;
   }
 
   .stage-header {
@@ -956,10 +1089,11 @@ button {
   }
 
   .detail-panel {
-    grid-row: 3;
+    grid-row: 2;
     width: 100%;
     border-left: 0;
     border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
   }
 
   .boot-frame {
