@@ -11,6 +11,11 @@ $ProjectName = "HackerLake"
 $Author = "ChatGPT"
 $CreatedAt = Get-Date -Format "yyyy-MM-dd"
 
+function Color-Rgb {
+    param([int]$Red, [int]$Green, [int]$Blue)
+    return $Red + ($Green * 256) + ($Blue * 65536)
+}
+
 function New-Rows {
     param([object[]]$Rows)
     return ,$Rows
@@ -38,22 +43,25 @@ function Write-Sheet {
     )
 
     $Sheet.Name = $Spec.Name
+    $Sheet.Activate() | Out-Null
     $Sheet.Cells.Item(1, 1).Value2 = $Spec.Title
     $titleRange = $Sheet.Range("A1:H1")
     $titleRange.Merge() | Out-Null
     $titleRange.Font.Bold = $true
     $titleRange.Font.Size = 16
-    $titleRange.Font.Color = 0xFFFFFF
-    $titleRange.Interior.Color = 0x4F2E10
+    $titleRange.Font.Color = (Color-Rgb 255 255 255)
+    $titleRange.Interior.Color = (Color-Rgb 16 46 79)
     $titleRange.RowHeight = 28
 
     for ($i = 0; $i -lt $Spec.Headers.Count; $i++) {
         $cell = $Sheet.Cells.Item(3, $i + 1)
         $cell.Value2 = $Spec.Headers[$i]
         $cell.Font.Bold = $true
-        $cell.Font.Color = 0xFFFFFF
-        $cell.Interior.Color = 0x806000
+        $cell.Font.Color = (Color-Rgb 255 255 255)
+        $cell.Interior.Color = (Color-Rgb 0 96 128)
         $cell.WrapText = $true
+        $cell.HorizontalAlignment = -4108
+        $cell.VerticalAlignment = -4108
     }
 
     $rowIndex = 4
@@ -65,6 +73,9 @@ function Write-Sheet {
             $Sheet.Cells.Item($rowIndex, $i + 1).WrapText = $true
             $Sheet.Cells.Item($rowIndex, $i + 1).VerticalAlignment = -4160
         }
+        if (($rowIndex % 2) -eq 0) {
+            $Sheet.Range($Sheet.Cells.Item($rowIndex, 1), $Sheet.Cells.Item($rowIndex, $Spec.Headers.Count)).Interior.Color = (Color-Rgb 247 250 252)
+        }
         $rowIndex++
     }
 
@@ -72,17 +83,42 @@ function Write-Sheet {
     $lastCol = [Math]::Max(1, $Spec.Headers.Count)
     $used = $Sheet.Range($Sheet.Cells.Item(3, 1), $Sheet.Cells.Item($lastRow, $lastCol))
     $used.Borders.LineStyle = 1
-    $used.Borders.Color = 0xD9D9D9
-    $Sheet.Rows.Item("3:$lastRow").RowHeight = 42
-    $Sheet.Columns.Item("A:A").ColumnWidth = 16
-    $Sheet.Columns.Item("B:B").ColumnWidth = 24
-    $Sheet.Columns.Item("C:C").ColumnWidth = 34
-    $Sheet.Columns.Item("D:D").ColumnWidth = 42
-    $Sheet.Columns.Item("E:E").ColumnWidth = 42
+    $used.Borders.Color = (Color-Rgb 217 217 217)
+    $used.Font.Name = "Yu Gothic"
+    $used.Font.Size = 10
+    $Sheet.Columns.Item("A:A").ColumnWidth = 15
+    $Sheet.Columns.Item("B:B").ColumnWidth = 22
+    $Sheet.Columns.Item("C:C").ColumnWidth = 36
+    $Sheet.Columns.Item("D:D").ColumnWidth = 46
+    $Sheet.Columns.Item("E:E").ColumnWidth = 46
     $Sheet.Columns.Item("F:F").ColumnWidth = 28
     $Sheet.Columns.Item("G:G").ColumnWidth = 28
-    $Sheet.Columns.Item("H:H").ColumnWidth = 28
+    $Sheet.Columns.Item("H:H").ColumnWidth = 24
+    $Sheet.Rows.Item("3:$lastRow").AutoFit()
+    $Sheet.Rows.Item(3).RowHeight = 32
+    for ($r = 4; $r -le $lastRow; $r++) {
+        if ([double]$Sheet.Rows.Item($r).RowHeight -lt 34) {
+            $Sheet.Rows.Item($r).RowHeight = 34
+        }
+        if ([double]$Sheet.Rows.Item($r).RowHeight -gt 135) {
+            $Sheet.Rows.Item($r).RowHeight = 135
+        }
+    }
+    $used.AutoFilter() | Out-Null
+    $Sheet.Range("A4").Select() | Out-Null
+    $Sheet.Application.ActiveWindow.FreezePanes = $false
+    $Sheet.Application.ActiveWindow.SplitRow = 3
+    $Sheet.Application.ActiveWindow.FreezePanes = $true
     $Sheet.Application.ActiveWindow.DisplayGridlines = $false
+    $Sheet.PageSetup.Orientation = 2
+    $Sheet.PageSetup.Zoom = $false
+    $Sheet.PageSetup.FitToPagesWide = 1
+    $Sheet.PageSetup.FitToPagesTall = $false
+    $Sheet.PageSetup.PrintTitleRows = '$1:$3'
+    $Sheet.PageSetup.LeftMargin = $Sheet.Application.InchesToPoints(0.3)
+    $Sheet.PageSetup.RightMargin = $Sheet.Application.InchesToPoints(0.3)
+    $Sheet.PageSetup.TopMargin = $Sheet.Application.InchesToPoints(0.45)
+    $Sheet.PageSetup.BottomMargin = $Sheet.Application.InchesToPoints(0.45)
 }
 
 function Save-Workbook {

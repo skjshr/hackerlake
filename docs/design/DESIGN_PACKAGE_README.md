@@ -12,6 +12,11 @@ This directory contains the SIer-style design package for HackerLake.
 - `06_認証認可設計書_HackerLake.xlsx`
 - `07_テスト設計書_HackerLake.xlsx`
 
+## License-Free Previews
+
+- `pdf/*.pdf`: PDF exports for reading without Excel.
+- `html/*.htm`: browser-readable HTML exports with sheet tabs.
+
 ## Regeneration
 
 Run from the repository root:
@@ -19,6 +24,7 @@ Run from the repository root:
 ```powershell
 pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\build-design-docs.ps1
 pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\validate-design-docs.ps1
+pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\tools\render-design-previews.ps1
 ```
 
 Use `pwsh` instead of Windows PowerShell 5.x because the workbook generator contains Japanese text and is encoded as UTF-8.

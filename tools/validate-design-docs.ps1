@@ -4,6 +4,8 @@ Set-StrictMode -Version Latest
 $Root = Split-Path -Parent $PSScriptRoot
 $DesignDir = Join-Path $Root "docs\design"
 $UmlDir = Join-Path $Root "docs\uml"
+$PdfDir = Join-Path $Root "docs\design\pdf"
+$HtmlDir = Join-Path $Root "docs\design\html"
 
 $expectedWorkbooks = @(
     "01_基本設計書_HackerLake.xlsx",
@@ -32,6 +34,21 @@ foreach ($file in $expectedWorkbooks) {
         $missing += $path
     } elseif ((Get-Item -LiteralPath $path).Length -lt 5000) {
         throw "Workbook appears too small: $path"
+    }
+}
+foreach ($file in $expectedWorkbooks) {
+    $base = [System.IO.Path]::GetFileNameWithoutExtension($file)
+    $pdf = Join-Path $PdfDir "$base.pdf"
+    $html = Join-Path $HtmlDir "$base.htm"
+    if (Test-Path -LiteralPath $pdf) {
+        if ((Get-Item -LiteralPath $pdf).Length -lt 10000) {
+            throw "PDF preview appears too small: $pdf"
+        }
+    }
+    if (Test-Path -LiteralPath $html) {
+        if ((Get-Item -LiteralPath $html).Length -lt 5000) {
+            throw "HTML preview appears too small: $html"
+        }
     }
 }
 foreach ($file in $expectedUml) {

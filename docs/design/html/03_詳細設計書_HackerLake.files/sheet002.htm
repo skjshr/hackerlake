@@ -1,0 +1,179 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:x="urn:schemas-microsoft-com:office:excel"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=shift_jis">
+<meta name=ProgId content=Excel.Sheet>
+<meta name=Generator content="Microsoft Excel 15">
+<link id=Main-File rel=Main-File href="../03_詳細設計書_HackerLake.htm">
+<link rel=File-List href=filelist.xml>
+<link rel=Stylesheet href=stylesheet.css>
+<style>
+<!--table
+	{mso-displayed-decimal-separator:"\.";
+	mso-displayed-thousand-separator:"\,";}
+@page
+	{margin:.45in .3in .45in .3in;
+	mso-header-margin:.3in;
+	mso-footer-margin:.3in;
+	mso-page-orientation:landscape;}
+ruby
+	{ruby-align:left;}
+rt
+	{color:windowtext;
+	font-size:6.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:游ゴシック, monospace;
+	mso-font-charset:128;
+	mso-char-type:katakana;
+	display:none;}
+-->
+</style>
+<![if !supportTabStrip]><script language="JavaScript">
+<!--
+function fnUpdateTabs()
+ {
+  if (parent.window.g_iIEVer>=4) {
+   if (parent.document.readyState=="complete"
+    && parent.frames['frTabs'].document.readyState=="complete")
+   parent.fnSetActiveSheet(1);
+  else
+   window.setTimeout("fnUpdateTabs();",150);
+ }
+}
+
+if (window.name!="frSheet")
+ window.location.replace("../03_詳細設計書_HackerLake.htm");
+else
+ fnUpdateTabs();
+//-->
+</script>
+<![endif]>
+</head>
+
+<body link="#0563C1" vlink="#954F72">
+
+<table border=0 cellpadding=0 cellspacing=0 width=2000 style='border-collapse:
+ collapse;table-layout:fixed;width:1502pt'>
+ <col width=125 style='mso-width-source:userset;mso-width-alt:4000;width:94pt'>
+ <col width=181 style='mso-width-source:userset;mso-width-alt:5792;width:136pt'>
+ <col width=293 style='mso-width-source:userset;mso-width-alt:9376;width:220pt'>
+ <col width=373 span=2 style='mso-width-source:userset;mso-width-alt:11936;
+ width:280pt'>
+ <col width=229 span=2 style='mso-width-source:userset;mso-width-alt:7328;
+ width:172pt'>
+ <col width=197 style='mso-width-source:userset;mso-width-alt:6304;width:148pt'>
+ <tr height=37 style='mso-height-source:userset;height:27.95pt'>
+  <td colspan=8 height=37 class=xl69 width=2000 style='height:27.95pt;
+  width:1502pt'>コンポーネント設計</td>
+ </tr>
+ <tr height=25 style='height:18.75pt'>
+  <td height=25 colspan=8 style='height:18.75pt;mso-ignore:colspan'></td>
+ </tr>
+ <tr height=42 style='mso-height-source:userset;height:32.1pt'>
+  <td height=42 class=xl65 width=125 style='height:32.1pt;width:94pt'>ID</td>
+  <td class=xl65 width=181 style='border-left:none;width:136pt'>名称</td>
+  <td class=xl65 width=293 style='border-left:none;width:220pt'>責務</td>
+  <td class=xl65 width=373 style='border-left:none;width:280pt'>入力</td>
+  <td class=xl65 width=373 style='border-left:none;width:280pt'>依存</td>
+  <td class=xl65 width=229 style='border-left:none;width:172pt'>イベント</td>
+  <td class=xl65 width=229 style='border-left:none;width:172pt'>実装種別</td>
+  <td class=xl65 width=197 style='border-left:none;width:148pt'>スコープ</td>
+ </tr>
+ <tr height=45 style='mso-height-source:userset;height:33.95pt'>
+  <td height=45 class=xl66 width=125 style='height:33.95pt;border-top:none;
+  width:94pt'>CMP-001</td>
+  <td class=xl66 width=181 style='border-top:none;border-left:none;width:136pt'>AppShell</td>
+  <td class=xl66 width=293 style='border-top:none;border-left:none;width:220pt'>全体レイアウト、選択状態の保持</td>
+  <td class=xl66 width=373 style='border-top:none;border-left:none;width:280pt'>MapViewState,
+  LearningHistoryItem[]</td>
+  <td class=xl66 width=373 style='border-top:none;border-left:none;width:280pt'>CategoryRail,
+  KnowledgeMap, NodeDetailPanel, LearningHistory</td>
+  <td class=xl66 width=229 style='border-top:none;border-left:none;width:172pt'>なし</td>
+  <td class=xl66 width=229 style='border-top:none;border-left:none;width:172pt'>React
+  component</td>
+  <td class=xl66 width=197 style='border-top:none;border-left:none;width:148pt'>v1</td>
+ </tr>
+ <tr height=45 style='mso-height-source:userset;height:33.95pt'>
+  <td height=45 class=xl67 width=125 style='height:33.95pt;border-top:none;
+  width:94pt'>CMP-002</td>
+  <td class=xl67 width=181 style='border-top:none;border-left:none;width:136pt'>KnowledgeMap</td>
+  <td class=xl67 width=293 style='border-top:none;border-left:none;width:220pt'>ノード/エッジ描画、ズーム、選択イベント</td>
+  <td class=xl67 width=373 style='border-top:none;border-left:none;width:280pt'>LearningNode[],
+  KnowledgeEdge[], MapViewState</td>
+  <td class=xl67 width=373 style='border-top:none;border-left:none;width:280pt'>StaticNodeRepository,
+  MotionController</td>
+  <td class=xl67 width=229 style='border-top:none;border-left:none;width:172pt'>onNodeSelect</td>
+  <td class=xl67 width=229 style='border-top:none;border-left:none;width:172pt'>React
+  Flow wrapper</td>
+  <td class=xl67 width=197 style='border-top:none;border-left:none;width:148pt'>v1</td>
+ </tr>
+ <tr height=45 style='mso-height-source:userset;height:33.95pt'>
+  <td height=45 class=xl66 width=125 style='height:33.95pt;border-top:none;
+  width:94pt'>CMP-003</td>
+  <td class=xl66 width=181 style='border-top:none;border-left:none;width:136pt'>NodeDetailPanel</td>
+  <td class=xl66 width=293 style='border-top:none;border-left:none;width:220pt'>ノード本文表示</td>
+  <td class=xl66 width=373 style='border-top:none;border-left:none;width:280pt'>LearningNode</td>
+  <td class=xl66 width=373 style='border-top:none;border-left:none;width:280pt'>なし</td>
+  <td class=xl66 width=229 style='border-top:none;border-left:none;width:172pt'>selectedNodeId</td>
+  <td class=xl66 width=229 style='border-top:none;border-left:none;width:172pt'>React
+  component</td>
+  <td class=xl66 width=197 style='border-top:none;border-left:none;width:148pt'>v1</td>
+ </tr>
+ <tr height=45 style='mso-height-source:userset;height:33.95pt'>
+  <td height=45 class=xl67 width=125 style='height:33.95pt;border-top:none;
+  width:94pt'>CMP-004</td>
+  <td class=xl67 width=181 style='border-top:none;border-left:none;width:136pt'>LearningHistory</td>
+  <td class=xl67 width=293 style='border-top:none;border-left:none;width:220pt'>選択履歴表示と復元</td>
+  <td class=xl67 width=373 style='border-top:none;border-left:none;width:280pt'>LearningHistoryItem[]</td>
+  <td class=xl67 width=373 style='border-top:none;border-left:none;width:280pt'>AppShell</td>
+  <td class=xl67 width=229 style='border-top:none;border-left:none;width:172pt'>onHistorySelect</td>
+  <td class=xl67 width=229 style='border-top:none;border-left:none;width:172pt'>React
+  component</td>
+  <td class=xl67 width=197 style='border-top:none;border-left:none;width:148pt'>v1</td>
+ </tr>
+ <tr height=45 style='mso-height-source:userset;height:33.95pt'>
+  <td height=45 class=xl66 width=125 style='height:33.95pt;border-top:none;
+  width:94pt'>CMP-005</td>
+  <td class=xl66 width=181 style='border-top:none;border-left:none;width:136pt'>StaticNodeRepository</td>
+  <td class=xl66 width=293 style='border-top:none;border-left:none;width:220pt'>静的教材データ取得</td>
+  <td class=xl66 width=373 style='border-top:none;border-left:none;width:280pt'>NodeDataset</td>
+  <td class=xl66 width=373 style='border-top:none;border-left:none;width:280pt'>なし</td>
+  <td class=xl66 width=229 style='border-top:none;border-left:none;width:172pt'>getNode/getEdges/getCategory</td>
+  <td class=xl66 width=229 style='border-top:none;border-left:none;width:172pt'>TypeScript
+  module</td>
+  <td class=xl66 width=197 style='border-top:none;border-left:none;width:148pt'>v1</td>
+ </tr>
+ <tr height=45 style='mso-height-source:userset;height:33.95pt'>
+  <td height=45 class=xl67 width=125 style='height:33.95pt;border-top:none;
+  width:94pt'>CMP-006</td>
+  <td class=xl67 width=181 style='border-top:none;border-left:none;width:136pt'>MotionController</td>
+  <td class=xl67 width=293 style='border-top:none;border-left:none;width:220pt'>アニメーション計画を生成</td>
+  <td class=xl67 width=373 style='border-top:none;border-left:none;width:280pt'>MapViewState,
+  user motion preference</td>
+  <td class=xl67 width=373 style='border-top:none;border-left:none;width:280pt'>KnowledgeMap</td>
+  <td class=xl67 width=229 style='border-top:none;border-left:none;width:172pt'>focusNode/focusCategory</td>
+  <td class=xl67 width=229 style='border-top:none;border-left:none;width:172pt'>TypeScript
+  module</td>
+  <td class=xl67 width=197 style='border-top:none;border-left:none;width:148pt'>v1</td>
+ </tr>
+ <![if supportMisalignedColumns]>
+ <tr height=0 style='display:none'>
+  <td width=125 style='width:94pt'></td>
+  <td width=181 style='width:136pt'></td>
+  <td width=293 style='width:220pt'></td>
+  <td width=373 style='width:280pt'></td>
+  <td width=373 style='width:280pt'></td>
+  <td width=229 style='width:172pt'></td>
+  <td width=229 style='width:172pt'></td>
+  <td width=197 style='width:148pt'></td>
+ </tr>
+ <![endif]>
+</table>
+
+</body>
+
+</html>
