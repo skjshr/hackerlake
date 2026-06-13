@@ -17,9 +17,9 @@
   --amber: #b48957;
   --cyan: #7d8f90;
   --red: #9b4b43;
-  --font-ui: "Segoe UI Variable Text", "Segoe UI", "Helvetica Neue", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
-  --font-display: Georgia, "Yu Mincho", "Hiragino Mincho ProN", serif;
-  --font-mono: "Cascadia Mono", Consolas, monospace;
+  --font-ui: "BIZ UDPGothic", "Yu Gothic", "Yu Gothic UI", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  --font-display: "BIZ UDPMincho", "Yu Mincho", "Hiragino Mincho ProN", Georgia, serif;
+  --font-mono: "UDEV Gothic", "Cascadia Mono", Consolas, monospace;
 }
 
 * {
@@ -263,7 +263,7 @@ button {
   margin: 24px 0;
 }
 
-.notice-list span {
+.notice-list > span {
   position: relative;
   padding: 12px 14px 12px 34px;
   border-left: 2px solid rgba(174, 135, 82, 0.72);
@@ -273,7 +273,7 @@ button {
   line-height: 1.6;
 }
 
-.notice-list span::before {
+.notice-list > span::before {
   content: "";
   position: absolute;
   left: 14px;
@@ -502,8 +502,10 @@ button {
 
 .notice-shell {
   width: min(700px, 92vw);
-  border: 1px solid rgba(236, 234, 222, 0.18);
-  background: rgba(6, 9, 10, 0.9);
+  border: 1px solid rgba(192, 38, 38, 0.46);
+  background:
+    linear-gradient(145deg, rgba(127, 29, 29, 0.18), transparent 42%),
+    rgba(6, 9, 10, 0.93);
   clip-path: none;
   box-shadow: 0 28px 90px rgba(0, 0, 0, 0.36);
 }
@@ -518,13 +520,16 @@ button {
 
 .notice-shell h1 {
   margin: 0 0 10px;
-  color: #eceade;
-  font-family: "Arial Narrow", "Helvetica Neue", var(--font-ui);
+  color: #e23b35;
+  font-family: var(--font-mono);
   font-size: clamp(34px, 6vw, 62px);
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: 800;
+  letter-spacing: 0.04em;
   line-height: 0.95;
   text-transform: uppercase;
+  text-shadow:
+    0 0 20px rgba(226, 59, 53, 0.36),
+    2px 0 rgba(0, 0, 0, 0.66);
 }
 
 .notice-shell h2 {
@@ -540,27 +545,58 @@ button {
   color: rgba(236, 234, 222, 0.82);
 }
 
-.notice-list span {
-  padding: 0 0 0 18px;
-  border-left-color: rgba(236, 234, 222, 0.18);
-  color: rgba(236, 234, 222, 0.86);
-  background: transparent;
-}
-
-.notice-list span::before {
-  left: 0;
-  top: 9px;
-  width: 5px;
-  height: 5px;
-  background: rgba(236, 234, 222, 0.54);
-  box-shadow: none;
-}
-
 .enter-button {
   border-color: rgba(236, 234, 222, 0.28);
   color: #eceade;
   background: rgba(236, 234, 222, 0.08);
   clip-path: none;
+}
+
+.notice-check {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 48px;
+  padding: 11px 12px;
+  border: 1px solid rgba(236, 234, 222, 0.12);
+  color: rgba(236, 234, 222, 0.84);
+  background: rgba(255, 255, 255, 0.032);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.55;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.notice-check input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.notice-check .box {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid rgba(236, 234, 222, 0.34);
+  color: #140606;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.notice-check.checked {
+  border-color: rgba(226, 59, 53, 0.54);
+  color: #f4eee2;
+  background: rgba(127, 29, 29, 0.18);
+}
+
+.notice-check.checked .box {
+  border-color: #e23b35;
+  background: #e23b35;
+  box-shadow: 0 0 18px rgba(226, 59, 53, 0.26);
 }
 
 .category-gate {
@@ -634,6 +670,15 @@ button {
     filter 150ms ease;
 }
 
+.category-main small {
+  align-self: start;
+  color: color-mix(in srgb, var(--node-color) 76%, #f0eadc);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 740;
+  letter-spacing: 0.04em;
+}
+
 .category-main:hover {
   transform: translateY(-2px);
   background:
@@ -644,9 +689,9 @@ button {
 
 .category-main strong {
   color: #f2f0e6;
-  font-family: var(--font-ui);
+  font-family: var(--font-display);
   font-size: 24px;
-  font-weight: 720;
+  font-weight: 700;
   line-height: 1.08;
 }
 
@@ -707,6 +752,7 @@ button {
   position: relative;
   z-index: 2;
   display: grid;
+  --theme-color: var(--green);
   width: 100%;
   grid-template-columns: minmax(0, 1fr) minmax(340px, 390px);
   grid-template-rows: 76px minmax(0, 1fr);
@@ -744,9 +790,9 @@ button {
   width: 38px;
   height: 38px;
   place-items: center;
-  color: var(--green);
-  border: 1px solid rgba(142, 157, 126, 0.56);
-  background: rgba(142, 157, 126, 0.09);
+  color: var(--theme-color);
+  border: 1px solid color-mix(in srgb, var(--theme-color) 54%, transparent);
+  background: color-mix(in srgb, var(--theme-color) 12%, transparent);
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
 }
 
@@ -781,9 +827,9 @@ button {
 }
 
 .genre-button:hover {
-  border-color: rgba(142, 157, 126, 0.36);
+  border-color: color-mix(in srgb, var(--theme-color) 42%, transparent);
   color: #eafff8;
-  background: rgba(142, 157, 126, 0.045);
+  background: color-mix(in srgb, var(--theme-color) 8%, transparent);
 }
 
 .phase-track {
@@ -816,12 +862,12 @@ button {
 
 .phase-track span.active {
   transform: scale(1.04);
-  border-color: rgba(142, 157, 126, 0.62);
+  border-color: color-mix(in srgb, var(--theme-color) 68%, transparent);
   color: #ebe6d8;
   background:
-    linear-gradient(180deg, rgba(142, 157, 126, 0.14), rgba(142, 157, 126, 0.035)),
+    linear-gradient(180deg, color-mix(in srgb, var(--theme-color) 18%, transparent), color-mix(in srgb, var(--theme-color) 5%, transparent)),
     rgba(22, 23, 19, 0.82);
-  box-shadow: inset 0 -2px 0 rgba(142, 157, 126, 0.38);
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--theme-color) 48%, transparent);
 }
 
 .next-actions button {
@@ -856,16 +902,16 @@ button {
 }
 
 .app-shell.detail-dominant .detail-panel {
-  border-left-color: rgba(224, 214, 190, 0.24);
+  border-left-color: color-mix(in srgb, var(--theme-color) 34%, rgba(224, 214, 190, 0.2));
   background:
-    linear-gradient(180deg, rgba(240, 234, 220, 0.035), transparent 30%),
+    linear-gradient(180deg, color-mix(in srgb, var(--theme-color) 8%, transparent), transparent 30%),
     rgba(19, 18, 14, 0.96);
   box-shadow: -24px 0 70px rgba(0, 0, 0, 0.34);
 }
 
 .detail-panel {
   scrollbar-width: thin;
-  scrollbar-color: rgba(142, 157, 126, 0.42) rgba(255, 255, 255, 0.03);
+  scrollbar-color: color-mix(in srgb, var(--theme-color) 48%, transparent) rgba(255, 255, 255, 0.03);
 }
 
 .map-stage {
@@ -914,7 +960,7 @@ button {
 .detail-heading span {
   display: inline-flex;
   margin-bottom: 6px;
-  color: rgba(142, 157, 126, 0.82);
+  color: color-mix(in srgb, var(--theme-color) 82%, #f0eadc);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0;
@@ -973,9 +1019,9 @@ button {
   align-content: center;
   min-height: 74px;
   padding: 12px 14px;
-  border-color: rgba(142, 157, 126, 0.32);
+  border-color: color-mix(in srgb, var(--theme-color) 38%, transparent);
   background:
-    linear-gradient(90deg, rgba(142, 157, 126, 0.12), transparent 72%),
+    linear-gradient(90deg, color-mix(in srgb, var(--theme-color) 16%, transparent), transparent 72%),
     rgba(13, 14, 11, 0.9);
 }
 
@@ -1029,12 +1075,12 @@ button {
 
 .connection-next button:hover {
   transform: translateY(-1px);
-  border-color: rgba(142, 157, 126, 0.42);
-  background: rgba(142, 157, 126, 0.065);
+  border-color: color-mix(in srgb, var(--theme-color) 52%, transparent);
+  background: color-mix(in srgb, var(--theme-color) 10%, transparent);
 }
 
 .connection-next em {
-  color: rgba(142, 157, 126, 0.78);
+  color: color-mix(in srgb, var(--theme-color) 82%, #f0eadc);
   font-size: 10px;
   font-style: normal;
   font-weight: 700;
@@ -1051,7 +1097,7 @@ button {
 }
 
 .react-flow__edge.edge-hot path {
-  stroke: var(--green);
+  stroke: var(--theme-color);
   stroke-width: 1.4;
   stroke-opacity: 0.32;
   filter: none;
@@ -1223,10 +1269,10 @@ button {
   gap: 8px;
   margin: 14px 0 4px;
   padding: 12px 13px;
-  border: 1px solid rgba(142, 157, 126, 0.18);
+  border: 1px solid color-mix(in srgb, var(--theme-color) 28%, transparent);
   border-radius: 2px;
   background:
-    linear-gradient(90deg, rgba(142, 157, 126, 0.06), transparent 72%),
+    linear-gradient(90deg, color-mix(in srgb, var(--theme-color) 10%, transparent), transparent 72%),
     rgba(255, 255, 255, 0.026);
 }
 
@@ -1282,7 +1328,7 @@ button {
 .note-template summary::after,
 .screenshot-block summary::after {
   content: "+";
-  color: rgba(138, 146, 121, 0.86);
+  color: color-mix(in srgb, var(--theme-color) 88%, #f0eadc);
   font-family: var(--font-mono);
   font-size: 16px;
 }
@@ -1312,7 +1358,7 @@ button {
   gap: 8px;
   margin: 10px 0 8px;
   padding: 11px 12px;
-  border: 1px solid rgba(213, 255, 244, 0.12);
+  border: 1px solid color-mix(in srgb, var(--theme-color) 20%, rgba(224, 214, 190, 0.08));
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.022);
 }
@@ -1349,12 +1395,12 @@ button {
 
 .detail-next-strip button:hover {
   transform: translateY(-1px);
-  border-color: rgba(142, 157, 126, 0.36);
-  background: rgba(142, 157, 126, 0.052);
+  border-color: color-mix(in srgb, var(--theme-color) 44%, transparent);
+  background: color-mix(in srgb, var(--theme-color) 8%, transparent);
 }
 
 .detail-next-strip em {
-  color: rgba(142, 157, 126, 0.78);
+  color: color-mix(in srgb, var(--theme-color) 82%, #f0eadc);
   font-size: 10px;
   font-style: normal;
   font-weight: 740;
@@ -1385,15 +1431,17 @@ button {
 
 .screenshot-block {
   margin-top: 10px;
-  border-top: 1px solid rgba(224, 214, 190, 0.12);
+  border-top: 1px solid color-mix(in srgb, var(--theme-color) 18%, rgba(224, 214, 190, 0.1));
 }
 
 .screen-mock {
   overflow: hidden;
   margin: 4px 0 12px;
-  border: 1px solid rgba(224, 214, 190, 0.14);
+  border: 1px solid color-mix(in srgb, var(--theme-color) 30%, rgba(224, 214, 190, 0.1));
   border-radius: 6px;
-  background: #12110e;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--theme-color) 8%, transparent), transparent 50%),
+    #12110e;
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
 }
 
@@ -1403,15 +1451,15 @@ button {
   gap: 7px;
   min-height: 34px;
   padding: 0 11px;
-  border-bottom: 1px solid rgba(224, 214, 190, 0.1);
-  background: rgba(240, 234, 220, 0.05);
+  border-bottom: 1px solid color-mix(in srgb, var(--theme-color) 20%, rgba(224, 214, 190, 0.08));
+  background: color-mix(in srgb, var(--theme-color) 8%, rgba(240, 234, 220, 0.03));
 }
 
 .screen-toolbar i {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: rgba(240, 234, 220, 0.32);
+  background: color-mix(in srgb, var(--theme-color) 54%, rgba(240, 234, 220, 0.22));
 }
 
 .screen-toolbar span {
@@ -1431,7 +1479,7 @@ button {
   min-height: 40px;
   padding: 0 14px;
   color: rgba(240, 234, 220, 0.68);
-  background: #1d1b16;
+  background: color-mix(in srgb, var(--theme-color) 10%, #1d1b16);
   font-size: 11px;
 }
 
@@ -1446,7 +1494,7 @@ button {
   grid-template-columns: minmax(0, 1fr) 118px;
   gap: 12px;
   padding: 14px;
-  background: linear-gradient(145deg, #e8e1d1, #cfc5b0);
+  background: linear-gradient(145deg, #e8e1d1, color-mix(in srgb, var(--theme-color) 12%, #cfc5b0));
 }
 
 .web-layout section {
@@ -1499,7 +1547,7 @@ button {
   padding: 8px;
   border-radius: 3px;
   color: #f4ecdc;
-  background: rgba(20, 18, 14, 0.82);
+  background: color-mix(in srgb, var(--theme-color) 12%, rgba(20, 18, 14, 0.82));
   font-family: var(--font-mono);
   font-size: 10px;
 }
@@ -1524,7 +1572,7 @@ button {
 }
 
 .screen-terminal .terminal-lines p:first-child {
-  color: #aeb79b;
+  color: color-mix(in srgb, var(--theme-color) 72%, #d8d2c4);
 }
 
 .evidence-grid,
@@ -1579,7 +1627,7 @@ button {
 
 .crypto-paper strong {
   margin-top: 4px;
-  color: #6f4e29;
+  color: color-mix(in srgb, var(--theme-color) 76%, #6f4e29);
 }
 
 .detail-next-strip strong {
@@ -1615,7 +1663,7 @@ button {
 
 .detail-block summary::after {
   content: "+";
-  color: var(--green);
+  color: var(--theme-color);
   font-family: var(--font-mono);
   font-size: 17px;
 }
@@ -1706,7 +1754,7 @@ button {
   min-height: 30px;
   align-items: center;
   justify-content: space-between;
-  color: rgba(142, 157, 126, 0.82);
+  color: color-mix(in srgb, var(--theme-color) 82%, #f0eadc);
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
@@ -1719,7 +1767,7 @@ button {
 
 .inline-help summary::after {
   content: "+";
-  color: rgba(142, 157, 126, 0.72);
+  color: color-mix(in srgb, var(--theme-color) 76%, #f0eadc);
   font-family: var(--font-mono);
 }
 
@@ -1761,8 +1809,8 @@ button {
 
 .branch-cards button:hover:not(:disabled) {
   transform: translateY(-1px);
-  border-color: rgba(142, 157, 126, 0.36);
-  background: rgba(142, 157, 126, 0.055);
+  border-color: color-mix(in srgb, var(--theme-color) 44%, transparent);
+  background: color-mix(in srgb, var(--theme-color) 8%, transparent);
 }
 
 .branch-cards button:disabled {
@@ -1784,7 +1832,7 @@ button {
 }
 
 .branch-cards em {
-  color: var(--green);
+  color: var(--theme-color);
 }
 
 .next-actions {
@@ -1933,7 +1981,7 @@ button {
     padding: 14px;
   }
 
-  .notice-list span {
+  .notice-list > span {
     padding-right: 10px;
   }
 

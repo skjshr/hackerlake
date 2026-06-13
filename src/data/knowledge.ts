@@ -35,6 +35,7 @@ export type LearningNodeData = {
 export type Category = {
   id: CategoryId;
   title: string;
+  englishTitle: string;
   subtitle: string;
   rootNodeId: string;
   color: string;
@@ -61,6 +62,7 @@ type PhasePlan = {
 type CategoryPlan = {
   id: CategoryId;
   title: string;
+  englishTitle: string;
   subtitle: string;
   color: string;
   what: string;
@@ -74,9 +76,10 @@ const sharedSafety =
 const categoryPlans: CategoryPlan[] = [
   {
     id: 'web',
-    title: 'Web',
+    title: 'ウェブ',
+    englishTitle: 'Web',
     subtitle: '画面・HTTP・状態管理を読む',
-    color: '#8a9279',
+    color: '#78a05f',
     what:
       'ブラウザに見える画面、URL、HTTP通信、Cookie、API、入力、エラーを分解して読むジャンル。最初に学ぶと、CTF全体の「入口の見つけ方」が身につく。',
     choose: '画面、ログイン、フォーム、API、CookieのようなWebアプリの挙動を読みたいとき。',
@@ -262,9 +265,10 @@ const categoryPlans: CategoryPlan[] = [
   },
   {
     id: 'network',
-    title: 'Network',
+    title: 'ネットワーク',
+    englishTitle: 'Network',
     subtitle: '到達性・サービス・境界を読む',
-    color: '#738687',
+    color: '#4f93a5',
     what:
       'ホスト、サービス、名前解決、応答差分、内部外部の境界を読むジャンル。画面がない対象でも、何が返るかから状況を組み立てる。',
     choose: 'ポート、プロトコル、名前解決、到達性、内部ネットワークっぽい問題を整理したいとき。',
@@ -448,9 +452,10 @@ const categoryPlans: CategoryPlan[] = [
   },
   {
     id: 'forensics',
-    title: 'Forensics',
+    title: 'フォレンジック',
+    englishTitle: 'Forensics',
     subtitle: 'ファイル・ログ・時系列を復元する',
-    color: '#a87f4f',
+    color: '#b88645',
     what:
       '残されたファイル、ログ、メタデータ、通信記録から「何が起きたか」を組み立てるジャンル。攻撃ではなく調査と説明力が中心。',
     choose: 'pcap、ログ、画像、zip、メモリ、時刻、改ざん痕跡の問題を読みたいとき。',
@@ -637,9 +642,10 @@ const categoryPlans: CategoryPlan[] = [
 const extraCategoryPlans: CategoryPlan[] = [
   {
     id: 'crypto',
-    title: 'Crypto',
+    title: 'クリプト',
+    englishTitle: 'Crypto',
     subtitle: '形式・前提・弱い使い方を読む',
-    color: '#83788c',
+    color: '#8a72b0',
     what:
       '暗号文、鍵、乱数、署名、ハッシュ、エンコードの形式と前提を読むジャンル。計算に入る前の整理が勝ち筋になる。',
     choose: 'RSA、XOR、ハッシュ、エンコード、乱数、署名など、値と方式の関係を読みたいとき。',
@@ -816,9 +822,10 @@ const extraCategoryPlans: CategoryPlan[] = [
 const remainingCategoryPlans: CategoryPlan[] = [
   {
     id: 'reverse',
-    title: 'Reverse',
+    title: 'リバース',
+    englishTitle: 'Reverse',
     subtitle: '実行結果・文字列・分岐を読む',
-    color: '#8f5149',
+    color: '#b05b59',
     what:
       'ソースがないプログラムの入力、出力、文字列、分岐、形式を観察し、内部の条件を推測するジャンル。マルウェア運用や回避ではなくCTFの読解に限定する。',
     choose: 'バイナリ、apk、wasm、難読化されたスクリプト、入力チェック問題を読みたいとき。',
@@ -992,9 +999,10 @@ const remainingCategoryPlans: CategoryPlan[] = [
   },
   {
     id: 'pwn',
-    title: 'Pwn',
+    title: 'バイナリ',
+    englishTitle: 'Pwn',
     subtitle: 'メモリ境界・クラッシュ・保護機構を読む',
-    color: '#a5663f',
+    color: '#b56f3d',
     what:
       'プログラムの入力サイズ、メモリ扱い、クラッシュ、保護機構、権限境界を読むジャンル。具体的な悪用ではなく、なぜ危険かを理解する。',
     choose: 'バッファ、クラッシュ、checksec、stack/heap、権限付き実行の概念を学びたいとき。',
@@ -1173,6 +1181,7 @@ const allPlans = [...categoryPlans, ...extraCategoryPlans, ...remainingCategoryP
 export const categories: Category[] = allPlans.map((plan) => ({
   id: plan.id,
   title: plan.title,
+  englishTitle: plan.englishTitle,
   subtitle: plan.subtitle,
   rootNodeId: `${plan.id}-${plan.phases[0].nodes[0].id}`,
   color: plan.color,

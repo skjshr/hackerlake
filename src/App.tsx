@@ -24,6 +24,13 @@ import {
 } from './data/knowledge';
 
 type GateState = 'notice' | 'category' | 'workspace';
+type NoticeCheckId = 'scope' | 'law' | 'nonCrime';
+
+const noticeItems: Array<{ id: NoticeCheckId; text: string }> = [
+  { id: 'scope', text: '学習、CTF、自分が管理する検証環境だけで使う。' },
+  { id: 'law', text: '許可されていない対象は、スキャンだけでも法律や規約に抵触する可能性がある。' },
+  { id: 'nonCrime', text: '犯罪行為、不正アクセス、実サービスへの試行を推奨しない。' },
+];
 
 const phaseUi: Record<AttackPhase, { label: string; guide: string }> = {
   偵察: {
@@ -248,12 +255,18 @@ function getFlowWindowIds(nodeId: string, categoryId: CategoryId, previousId?: s
 
 export function App() {
   const [gateState, setGateState] = useState<GateState>('notice');
-  const [agreed, setAgreed] = useState(false);
+  const [noticeChecks, setNoticeChecks] = useState<Record<NoticeCheckId, boolean>>({
+    scope: false,
+    law: false,
+    nonCrime: false,
+  });
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>(defaultCategory.id);
   const [selectedNodeId, setSelectedNodeId] = useState(defaultCategory.rootNodeId);
   const [history, setHistory] = useState<string[]>([defaultCategory.rootNodeId]);
   const [flow, setFlow] = useState<ReactFlowInstance<Node<LearningNodeData>, Edge> | null>(null);
   const [detailDominant, setDetailDominant] = useState(false);
+
+  const agreed = noticeItems.every((item) => noticeChecks[item.id]);
 
   useEffect(() => {
     if (gateState !== 'notice') return;
@@ -265,6 +278,10 @@ export function App() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [agreed, gateState]);
+
+  const setNoticeCheck = useCallback((id: NoticeCheckId, value: boolean) => {
+    setNoticeChecks((current) => ({ ...current, [id]: value }));
+  }, []);
 
   const selectedNode = getNode(selectedNodeId) ?? getNode(defaultCategory.rootNodeId)!;
   const selectedCategoryData = getCategory(selectedCategory);
@@ -411,7 +428,8 @@ export function App() {
           <>
             <NoticeGate
               agreed={agreed}
-              onAgreedChange={setAgreed}
+              checks={noticeChecks}
+              onCheckChange={setNoticeCheck}
               onEnter={() => agreed && setGateState('category')}
             />
             <BootScreen overlay />
@@ -423,6 +441,7 @@ export function App() {
             className={`app-shell ${selectedNodeId !== selectedRootId ? 'has-selected-focus' : ''} ${
               detailDominant ? 'detail-dominant' : ''
             }`}
+            style={{ '--theme-color': selectedCategoryData.color } as React.CSSProperties}
             initial={false}
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0 }}
@@ -644,6 +663,7 @@ function CategoryGate({ onSelect }: CategoryGateProps) {
               style={{ '--node-color': category.color } as React.CSSProperties}
             >
               <button className="category-main" onClick={() => onSelect(category.id)} type="button">
+                <small>{category.englishTitle}</small>
                 <strong>{category.title}</strong>
                 <span>{category.subtitle}</span>
                 <em>{category.choose}</em>
@@ -706,11 +726,12 @@ function BootScreen({ overlay = false }: BootScreenProps) {
 
 type NoticeGateProps = {
   agreed: boolean;
-  onAgreedChange: (value: boolean) => void;
+  checks: Record<NoticeCheckId, boolean>;
+  onCheckChange: (id: NoticeCheckId, value: boolean) => void;
   onEnter: () => void;
 };
 
-function NoticeGate({ agreed, onAgreedChange, onEnter }: NoticeGateProps) {
+function NoticeGate({ agreed, checks, onCheckChange, onEnter }: NoticeGateProps) {
   return (
     <motion.section
       className="notice-gate"
@@ -726,19 +747,18 @@ function NoticeGate({ agreed, onAgreedChange, onEnter }: NoticeGateProps) {
           HackerLakeは、攻撃手順を配るサイトではありません。CTFと自分の検証環境で、状況を読み、次の一手を選ぶための訓練用UIです。
         </p>
         <div className="notice-list">
-          <span>許可されていない対象については、スキャンだけでも法律や規約に抵触する可能性があります。</span>
-          <span>不正アクセス、侵入、実サービスへの試行を推奨するものではありません。</span>
-          <span>学習、CTF、自分が管理する検証環境だけを前提に進めてください。</span>
+          {noticeItems.map((item) => (
+            <label className={`notice-check ${checks[item.id] ? 'checked' : ''}`} key={item.id}>
+              <input
+                checked={checks[item.id]}
+                onChange={(event) => onCheckChange(item.id, event.target.checked)}
+                type="checkbox"
+              />
+              <span className="box">{checks[item.id] && <Check size={15} />}</span>
+              <span>{item.text}</span>
+            </label>
+          ))}
         </div>
-        <label className={`consent-line ${agreed ? 'checked' : ''}`}>
-          <input
-            checked={agreed}
-            onChange={(event) => onAgreedChange(event.target.checked)}
-            type="checkbox"
-          />
-          <span className="box">{agreed && <Check size={15} />}</span>
-          <span>上記を理解し、許可された学習範囲でのみ使用する</span>
-        </label>
         <button className="enter-button" disabled={!agreed} onClick={onEnter} type="button">
           <span>ENTER</span>
           <TerminalSquare size={18} />
