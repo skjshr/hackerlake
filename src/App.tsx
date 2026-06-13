@@ -9,7 +9,7 @@ import {
   type NodeProps,
   type ReactFlowInstance,
 } from '@xyflow/react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Check, Radar, TerminalSquare } from 'lucide-react';
 import {
   getCategory,
@@ -20,7 +20,7 @@ import {
   type LearningNodeData,
 } from './data/knowledge';
 
-type GateState = 'boot' | 'notice' | 'workspace';
+type GateState = 'notice' | 'workspace';
 
 function LearningNode({ data, selected }: NodeProps<Node<LearningNodeData>>) {
   const category = getCategory(data.category);
@@ -67,17 +67,12 @@ function getFlowWindowIds(nodeId: string, categoryId: CategoryId, previousId?: s
 }
 
 export function App() {
-  const [gateState, setGateState] = useState<GateState>('boot');
+  const [gateState, setGateState] = useState<GateState>('notice');
   const [agreed, setAgreed] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('web');
   const [selectedNodeId, setSelectedNodeId] = useState('web-root');
   const [history, setHistory] = useState<string[]>(['web-root']);
   const [flow, setFlow] = useState<ReactFlowInstance<Node<LearningNodeData>, Edge> | null>(null);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setGateState('notice'), 1800);
-    return () => window.clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (gateState !== 'notice') return;
@@ -176,25 +171,34 @@ export function App() {
     return () => window.removeEventListener('resize', onResize);
   }, [flow, gateState, previousNodeId, selectedCategory, selectedNodeId]);
 
+  useEffect(() => {
+    if (gateState !== 'workspace') return;
+    window.requestAnimationFrame(() => {
+      document.querySelector('.detail-panel')?.scrollTo({ top: 0, behavior: 'smooth' });
+      if (window.innerWidth <= 1100) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+  }, [gateState, selectedNodeId]);
+
   return (
     <div className="shell-root">
       <div className="ambient-grid" />
       <div className="signal-field" />
-      <AnimatePresence mode="wait">
-        {gateState === 'boot' && <BootScreen key="boot" />}
         {gateState === 'notice' && (
-          <NoticeGate
-            key="notice"
-            agreed={agreed}
-            onAgreedChange={setAgreed}
-            onEnter={() => agreed && setGateState('workspace')}
-          />
+          <>
+            <NoticeGate
+              agreed={agreed}
+              onAgreedChange={setAgreed}
+              onEnter={() => agreed && setGateState('workspace')}
+            />
+            <BootScreen overlay />
+          </>
         )}
         {gateState === 'workspace' && (
           <motion.div
-            key="workspace"
             className={`app-shell ${selectedNodeId !== selectedRootId ? 'has-selected-focus' : ''}`}
-            initial={{ opacity: 0, scale: 0.985, filter: 'blur(10px)' }}
+            initial={false}
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.55, ease: [0.2, 0.9, 0.2, 1] }}
@@ -238,47 +242,66 @@ export function App() {
       </main>
 
       <aside className="detail-panel">
-        <AnimatePresence mode="wait">
           <motion.section
             key={selectedNodeId}
-            initial={{ opacity: 0, x: 20 }}
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -12 }}
             transition={{ duration: 0.18 }}
           >
-            <h2>なぜ見るか</h2>
-            <p className="lead">{selectedNode.data.intent}</p>
+            <div className="detail-heading">
+              <h2>{selectedNode.data.title}</h2>
+              <p className="lead">{selectedNode.data.summary}</p>
+            </div>
+
+            <details className="detail-block">
+              <summary>何それ？</summary>
+              <p>{selectedNode.data.what}</p>
+            </details>
+
+            <details className="detail-block">
+              <summary>なぜ見るか</summary>
+              <p>{selectedNode.data.intent}</p>
+            </details>
 
             <details className="detail-block" open>
               <summary>どう見るか</summary>
-              <ol className="simple-steps">
+              <ol className="observe-list">
                 {selectedNode.data.observe.slice(0, 4).map((item) => (
-                  <li key={item}>{item}</li>
+                  <li key={item.label}>
+                    <strong>{item.label}</strong>
+                    <p>{item.how}</p>
+                    <details className="inline-help">
+                      <summary>何それ？</summary>
+                      <p>{item.what}</p>
+                    </details>
+                  </li>
                 ))}
               </ol>
             </details>
 
-            <details className="detail-block">
-              <summary>条件が見えたら</summary>
-              <div className="branch-cards">
-                {selectedNode.data.signals.map((item, index) => {
-                  const targetId = displayedNextIds[index % Math.max(displayedNextIds.length, 1)];
-                  const targetNode = targetId ? getNode(targetId) : undefined;
-                  return (
-                    <button
-                      key={item}
-                      disabled={!targetNode}
-                      onClick={() => targetNode && focusNode(targetNode.id)}
-                      type="button"
-                    >
-                      <span>もし</span>
-                      <strong>{item}</strong>
-                      <em>{targetNode ? `${targetNode.data.title}へ` : '観察メモに残す'}</em>
-                    </button>
-                  );
-                })}
-              </div>
-            </details>
+            {selectedNode.data.branches.length > 0 && (
+              <details className="detail-block">
+                <summary>条件が見えたら</summary>
+                <div className="branch-cards">
+                  {selectedNode.data.branches.map((branch) => {
+                    const targetNode = getNode(branch.targetId);
+                    return (
+                      <button
+                        key={`${branch.signal}-${branch.targetId}`}
+                        disabled={!targetNode}
+                        onClick={() => targetNode && focusNode(targetNode.id)}
+                        type="button"
+                      >
+                        <span>見えた条件</span>
+                        <strong>{branch.signal}</strong>
+                        <em>{targetNode ? branch.action : '観察メモに残す'}</em>
+                      </button>
+                    );
+                  })}
+                </div>
+              </details>
+            )}
 
             <details className="detail-block">
               <summary>詳しく読む</summary>
@@ -300,23 +323,26 @@ export function App() {
               </div>
             </details>
           </motion.section>
-        </AnimatePresence>
       </aside>
           </motion.div>
         )}
-      </AnimatePresence>
     </div>
   );
 }
 
-function BootScreen() {
+type BootScreenProps = {
+  overlay?: boolean;
+};
+
+function BootScreen({ overlay = false }: BootScreenProps) {
   return (
     <motion.section
-      className="boot-screen"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, y: -18, filter: 'blur(14px)' }}
-      transition={{ duration: 0.42 }}
+      aria-hidden={overlay}
+      className={`boot-screen ${overlay ? 'boot-screen-overlay' : ''}`}
+      initial={false}
+      animate={overlay ? undefined : { opacity: 1 }}
+      exit={overlay ? undefined : { opacity: 0, y: -18, filter: 'blur(14px)' }}
+      transition={overlay ? undefined : { duration: 0.42 }}
     >
       <div className="boot-frame">
         <div className="boot-noise" />
@@ -327,14 +353,14 @@ function BootScreen() {
           <span />
         </div>
         <motion.h1
-          initial={{ opacity: 0, letterSpacing: '0.18em', y: 12 }}
+          initial={false}
           animate={{ opacity: 1, letterSpacing: '0.05em', y: 0 }}
           transition={{ duration: 0.65, ease: [0.2, 0.9, 0.2, 1] }}
         >
           HACK YOURSELF
         </motion.h1>
         <motion.p
-          initial={{ opacity: 0, y: 8 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.28, duration: 0.45 }}
         >
@@ -358,7 +384,7 @@ function NoticeGate({ agreed, onAgreedChange, onEnter }: NoticeGateProps) {
   return (
     <motion.section
       className="notice-gate"
-      initial={{ opacity: 0, scale: 0.985 }}
+      initial={false}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, x: -18, filter: 'blur(12px)' }}
       transition={{ duration: 0.38 }}

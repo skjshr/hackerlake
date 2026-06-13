@@ -100,6 +100,28 @@ button {
   padding: 24px;
 }
 
+.boot-screen-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  animation: bootOverlayRelease 2.05s ease forwards;
+}
+
+@keyframes bootOverlayRelease {
+  0%,
+  78% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
 .boot-frame {
   position: relative;
   width: min(920px, 92vw);
@@ -714,7 +736,7 @@ button {
 .react-flow__edge.edge-hot path {
   stroke: var(--green);
   stroke-width: 1;
-  stroke-opacity: 0.08;
+  stroke-opacity: 0.12;
   filter: none;
   stroke-dasharray: none;
 }
@@ -795,13 +817,7 @@ button {
 }
 
 .node-handle {
-  width: 4px;
-  height: 20px;
-  border: 0;
-  border-radius: 0;
-  background: var(--node-color);
-  opacity: 0.3;
-  box-shadow: none;
+  display: none;
 }
 
 .node-handle-target {
@@ -846,9 +862,10 @@ button {
 
 .detail-panel h2 {
   margin: 0 0 10px;
-  font-family: var(--font-display);
-  font-size: 32px;
-  line-height: 1.05;
+  font-family: var(--font-ui);
+  font-size: 28px;
+  font-weight: 650;
+  line-height: 1.12;
 }
 
 .lead {
@@ -858,9 +875,14 @@ button {
   line-height: 1.8;
 }
 
+.detail-heading {
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(213, 255, 244, 0.12);
+}
+
 .detail-block {
   position: relative;
-  margin-top: 10px;
+  margin-top: 8px;
   border-top: 1px solid rgba(213, 255, 244, 0.12);
   background: transparent;
 }
@@ -870,10 +892,10 @@ button {
   min-height: 44px;
   align-items: center;
   justify-content: space-between;
-  color: #e8eee9;
+  color: #e5ebe6;
   cursor: pointer;
   font-family: var(--font-ui);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   list-style: none;
 }
@@ -925,7 +947,7 @@ button {
   clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 0 100%);
 }
 
-.simple-steps {
+.observe-list {
   display: grid;
   gap: 8px;
   margin: 4px 0 0;
@@ -933,14 +955,68 @@ button {
   list-style: none;
 }
 
-.simple-steps li {
+.observe-list > li {
+  display: grid;
+  gap: 5px;
   padding: 10px 11px;
   border: 1px solid rgba(213, 255, 244, 0.1);
   border-radius: 4px;
   color: #dce5de;
   background: rgba(255, 255, 255, 0.026);
+}
+
+.observe-list strong {
+  color: #edf3ee;
   font-size: 13px;
-  line-height: 1.45;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.observe-list p {
+  margin: 0;
+  color: #bfc9c2;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.inline-help {
+  margin-top: 2px;
+  border-top: 1px solid rgba(213, 255, 244, 0.08);
+}
+
+.inline-help summary {
+  display: flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: space-between;
+  color: rgba(42, 255, 190, 0.82);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  list-style: none;
+}
+
+.inline-help summary::-webkit-details-marker {
+  display: none;
+}
+
+.inline-help summary::after {
+  content: "+";
+  color: rgba(42, 255, 190, 0.72);
+  font-family: var(--font-mono);
+}
+
+.detail-block[open] .inline-help:not([open]) summary::after {
+  content: "+";
+}
+
+.inline-help[open] summary::after {
+  content: "-";
+}
+
+.inline-help p {
+  padding-bottom: 4px;
+  color: #aeb9b2;
 }
 
 .branch-cards {
