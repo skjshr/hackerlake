@@ -7,6 +7,9 @@ Thumbs.db
 node_modules/
 dist/
 qa/
+output/
+tmp/
+image2-start-marker.txt
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts

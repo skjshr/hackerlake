@@ -1,14 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Background,
-  Handle,
-  Position,
-  ReactFlow,
-  type Edge,
-  type Node,
-  type NodeProps,
-  type ReactFlowInstance,
-} from '@xyflow/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Radar, TerminalSquare } from 'lucide-react';
 import {
@@ -16,7 +6,6 @@ import {
   categories,
   getCategory,
   getNode,
-  learningEdges,
   learningNodes,
   type AttackPhase,
   type CategoryId,
@@ -24,12 +13,10 @@ import {
 } from './data/knowledge';
 
 type GateState = 'notice' | 'category' | 'workspace';
-type NoticeCheckId = 'scope' | 'law' | 'nonCrime';
+type NoticeCheckId = 'scope';
 
 const noticeItems: Array<{ id: NoticeCheckId; text: string }> = [
   { id: 'scope', text: '学習、CTF、自分が管理する検証環境だけで使う' },
-  { id: 'law', text: '許可されていない対象は、スキャンだけでも法律や規約に抵触する可能性がある' },
-  { id: 'nonCrime', text: '犯罪行為、不正アクセス、実サービスへの試行を推奨しない' },
 ];
 
 const phaseUi: Record<AttackPhase, { label: string; guide: string }> = {
@@ -81,88 +68,51 @@ function getFlowRelation(current: LearningNodeData, target: LearningNodeData): F
   return 'same';
 }
 
-function getMiniExample(node: LearningNodeData) {
-  const [first, second] = node.observe;
-  if (!first) return `${node.title}では、まず対象を一つだけ選び、見えた事実を短く記録する`;
-  const next = second ? `次に「${second.label}」も見て、同じ説明でつながるか確認する` : '次に、同じ観察をもう一度別の対象で確認する';
-  return stripStops(`例: 「${first.label}」を見るときは、${first.how} 見えた内容を「${first.what}」としてメモする ${next}`);
+function getConnectionLabel(current: LearningNodeData, target: LearningNodeData) {
+  if (target.level < current.level) return phaseUi[target.phase].label;
+  return target.title;
 }
 
-function getDecisionText(node: LearningNodeData) {
-  const labels = node.observe.slice(0, 3).map((item) => `「${item.label}」`).join('、');
-  return `${labels || '観察項目'}を自分の言葉で説明できたら次へ進む 説明できない項目があるなら、前のノードへ戻って問題文、画面、ログ、配布物のどれを見落としたか確認する`;
-}
-
-function LearningNode({ data }: NodeProps<Node<LearningNodeData>>) {
-  const category = getCategory(data.category);
-
-  return (
-    <div
-      className={`learning-node level-${data.level}`}
-      style={{ '--node-color': category.color } as React.CSSProperties}
-    >
-      <Handle className="node-handle node-handle-target" position={Position.Left} type="target" />
-      <Handle className="node-handle node-handle-source" position={Position.Right} type="source" />
-      <span className="node-phase">{phaseUi[data.phase].label}</span>
-      <strong>{data.title}</strong>
-    </div>
-  );
-}
-
-const nodeTypes = { learning: LearningNode };
 const defaultCategory = categories[0]!;
+type KnowledgeNode = NonNullable<ReturnType<typeof getNode>>;
+const nodeScreenAssets = import.meta.glob<string>('./assets/node-screens/*.webp', {
+  eager: true,
+  import: 'default',
+  query: '?url',
+});
+
+function getNodeScreenSrc(nodeId: string) {
+  return nodeScreenAssets[`./assets/node-screens/${nodeId}.webp`];
+}
+
+function getBeginnerGuide(node: LearningNodeData) {
+  const first = node.observe[0];
+  const second = node.observe[1];
+  const third = node.observe[2];
+
+  return {
+    start: first
+      ? `${node.title}では、最初に「${first.label}」だけを見る。ここで全部を理解しようとせず、画面・ログ・ファイル・値のどれを根拠にできるかを一つ決める。`
+      : `${node.title}では、まず対象を一つ選び、見えた事実だけを短く書く。`,
+    why: second
+      ? `次に「${second.label}」を見る。これは最初に見た事実が偶然ではなく、別の場所からも説明できるかを確認するため。`
+      : '次に、同じ観察を別の場所でもう一度確認する。ひとつの表示だけで判断しない。',
+    compare: third
+      ? `余裕があれば「${third.label}」まで見る。ここまでそろうと、次に進む理由と、まだ戻って確認すべき理由を分けやすい。`
+      : '迷ったら、分かったことと分からないことを分ける。次に進む理由が言えないなら、この段階をもう一度見る。',
+  };
+}
 
 function SummaryLabel({ children }: { children: string }) {
   return <span className="summary-label">{children}</span>;
 }
 
-function getTakeaways(node: LearningNodeData) {
-  const first = node.observe[0]?.label ?? '見る対象';
-  const second = node.observe[1]?.label ?? '根拠';
-  return [
-    `${first}を入口として説明できる`,
-    `${second}を根拠としてメモできる`,
-    `次に進むか戻るかを自分で選べる`,
-  ];
-}
-
-function getExampleItems(node: LearningNodeData) {
-  const first = node.observe[0];
-  const second = node.observe[1];
-  return [
-    first ? `例: ${first.label}を見るなら「${compactText(first.how)}」まで確認する` : `例: ${node.title}を一つ選び、見えた事実だけを書く`,
-    second ? `次: ${second.label}も同じ説明でつながるか見る` : '次: 同じ観察を別の場所でもう一度確認する',
-    `メモ: ${compactText(node.intent)}`,
-  ];
-}
-
-function getRiskText(node: LearningNodeData) {
-  return `${node.title}を飛ばすと、脆弱性名やツール名だけを追って、なぜその選択をしたのか説明できなくなる`;
-}
-
-function getObserveExample(item: LearningNodeData['observe'][number]) {
-  return `見える例: ${compactText(item.what)} / 確認: ${compactText(item.how)}`;
-}
-
-function getObserveNextHint(item: LearningNodeData['observe'][number], node: LearningNodeData) {
-  return `${item.label}が説明できたら、${node.branches[0]?.signal ?? '次の候補'}を探す 説明できなければ前の画面や問題文へ戻る`;
-}
-
-function getLogExample(node: LearningNodeData) {
-  const first = node.observe[0];
-  return {
-    seen: first ? `${node.title} / ${first.label}` : node.title,
-    learned: first ? compactText(first.what) : compactText(node.summary),
-    unknown: node.observe[1]?.label ?? 'まだ根拠が薄い点',
-    next: node.branches[0]?.action ?? '次のノードで同じ根拠が通るか確認する',
-  };
-}
-
-function ScreenshotMock({ node }: { node: LearningNodeData }) {
+function ScreenshotMock({ node, nodeId }: { node: LearningNodeData; nodeId: string }) {
   const category = getCategory(node.category);
   const focusItems = node.observe.slice(0, 3);
   const primary = focusItems[0];
   const secondary = focusItems[1];
+  const generatedScreen = getNodeScreenSrc(nodeId);
 
   return (
     <figure
@@ -170,40 +120,52 @@ function ScreenshotMock({ node }: { node: LearningNodeData }) {
       className={`screen-mock topic-screen topic-screen-${node.category}`}
       style={{ '--node-color': category.color } as React.CSSProperties}
     >
-      <div className="screen-toolbar">
-        <i />
-        <i />
-        <i />
-        <span>{category.title} / {phaseUi[node.phase].label} / {node.title}</span>
-      </div>
-      <div className="topic-screen-body">
-        <section className="topic-focus-card">
-          <small>FOCUS</small>
-          <strong>{primary?.label ?? node.title}</strong>
-          <p>{primary ? compactText(primary.what) : compactText(node.summary)}</p>
-        </section>
-        <div className="topic-side-stack">
-          <div>
-            <small>LOOK</small>
-            <span>{primary ? compactText(primary.how) : compactText(node.intent)}</span>
+      {generatedScreen ? (
+        <img
+          alt={`${node.title}の生成画面例`}
+          className="generated-screen-img"
+          decoding="async"
+          loading="lazy"
+          src={generatedScreen}
+        />
+      ) : (
+        <>
+          <div className="screen-toolbar">
+            <i />
+            <i />
+            <i />
+            <span>{category.title} / {phaseUi[node.phase].label} / {node.title}</span>
           </div>
-          <div>
-            <small>CHECK</small>
-            <span>{secondary ? compactText(secondary.label) : '次の根拠'}</span>
+          <div className="topic-screen-body">
+            <section className="topic-focus-card">
+              <small>FOCUS</small>
+              <strong>{primary?.label ?? node.title}</strong>
+              <p>{primary ? compactText(primary.what) : compactText(node.summary)}</p>
+            </section>
+            <div className="topic-side-stack">
+              <div>
+                <small>LOOK</small>
+                <span>{primary ? compactText(primary.how) : compactText(node.intent)}</span>
+              </div>
+              <div>
+                <small>CHECK</small>
+                <span>{secondary ? compactText(secondary.label) : '次の根拠'}</span>
+              </div>
+            </div>
+            <div className="topic-evidence-list">
+              {focusItems.map((item, index) => (
+                <span className={index === 0 ? 'active' : ''} key={item.label}>
+                  {item.label}
+                </span>
+              ))}
+            </div>
+            <div className="topic-decision">
+              <small>NEXT</small>
+              <span>{node.branches[0]?.signal ?? node.branches[0]?.action ?? '説明できたら次の段階へ進む'}</span>
+            </div>
           </div>
-        </div>
-        <div className="topic-evidence-list">
-          {focusItems.map((item, index) => (
-            <span className={index === 0 ? 'active' : ''} key={item.label}>
-              {item.label}
-            </span>
-          ))}
-        </div>
-        <div className="topic-decision">
-          <small>NEXT</small>
-          <span>{node.branches[0]?.signal ?? node.branches[0]?.action ?? '説明できたら次の段階へ進む'}</span>
-        </div>
-      </div>
+        </>
+      )}
       <figcaption>
         <strong>見る点</strong>
         <span>{primary?.label ?? node.title}</span>
@@ -212,41 +174,13 @@ function ScreenshotMock({ node }: { node: LearningNodeData }) {
   );
 }
 
-function getFlowWindowIds(nodeId: string, categoryId: CategoryId, previousId?: string) {
-  const rootId = getCategory(categoryId).rootNodeId;
-  const rootNode = getNode(rootId);
-  const currentNode = getNode(nodeId);
-
-  if (nodeId === rootId) {
-    return Array.from(new Set([rootId, ...(rootNode?.data.next ?? [])]));
-  }
-
-  const previousIsConnected = previousId
-    ? learningEdges.some((edge) => edge.source === previousId && edge.target === nodeId)
-    : false;
-  const pathSource = previousIsConnected && previousId ? previousId : rootId;
-
-  return Array.from(
-    new Set([
-      rootId,
-      pathSource,
-      nodeId,
-      ...(currentNode?.data.next ?? []),
-    ]),
-  );
-}
-
 export function App() {
   const [gateState, setGateState] = useState<GateState>('notice');
   const [noticeChecks, setNoticeChecks] = useState<Record<NoticeCheckId, boolean>>({
     scope: false,
-    law: false,
-    nonCrime: false,
   });
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>(defaultCategory.id);
   const [selectedNodeId, setSelectedNodeId] = useState(defaultCategory.rootNodeId);
-  const [history, setHistory] = useState<string[]>([defaultCategory.rootNodeId]);
-  const [flow, setFlow] = useState<ReactFlowInstance<Node<LearningNodeData>, Edge> | null>(null);
   const [detailDominant, setDetailDominant] = useState(false);
 
   const agreed = noticeItems.every((item) => noticeChecks[item.id]);
@@ -269,57 +203,43 @@ export function App() {
   const selectedNode = getNode(selectedNodeId) ?? getNode(defaultCategory.rootNodeId)!;
   const selectedCategoryData = getCategory(selectedCategory);
   const activePhase = selectedNode.data.phase;
-  const previousNodeId = history.length >= 2 ? history[history.length - 2] : undefined;
   const selectedRootId = selectedCategoryData.rootNodeId;
-  const fallbackNextIds = useMemo(
-    () => Array.from(new Set([previousNodeId, selectedRootId].filter(Boolean))) as string[],
-    [previousNodeId, selectedRootId],
-  );
-  const displayedNextIds = selectedNode.data.next.length > 0 ? selectedNode.data.next : fallbackNextIds;
-  const nextChoiceIds = useMemo(() => new Set(selectedNode.data.next), [selectedNode.data.next]);
-  const activeIds = useMemo(() => {
-    return new Set(getFlowWindowIds(selectedNodeId, selectedCategory, previousNodeId));
-  }, [previousNodeId, selectedCategory, selectedNodeId]);
-
-  const nodes = useMemo(
-    () =>
-      learningNodes
-        .filter((node) => activeIds.has(node.id))
-        .map((node) => ({
-          ...node,
-          selected: false,
-          data: node.data,
-          className:
-            node.id === selectedNodeId
-              ? `is-focus-node node-current node-level-${node.data.level}`
-              : selectedNodeId === selectedRootId || nextChoiceIds.has(node.id)
-                ? `is-choice-node node-${getFlowRelation(selectedNode.data, node.data)} node-level-${node.data.level}`
-                : `is-context-node node-${getFlowRelation(selectedNode.data, node.data)} node-level-${node.data.level}`,
-        })),
-    [activeIds, nextChoiceIds, selectedCategory, selectedNode.data, selectedNodeId, selectedRootId],
-  );
-
-  const edges = useMemo(
-    () =>
-      learningEdges
-        .filter((edge) => activeIds.has(edge.source) && activeIds.has(edge.target))
-        .map((edge) => ({
-          ...edge,
-          className: `${getNode(edge.source)?.data.level === getNode(edge.target)?.data.level ? 'edge-lateral' : 'edge-forward'} ${
-            edge.source === selectedNodeId || edge.target === selectedNodeId
-              ? 'edge-hot'
-              : 'edge-calm'
-          }`,
-      })),
-    [activeIds, selectedNodeId],
+  const categoryNodes = useMemo(
+    () => learningNodes.filter((node) => node.data.category === selectedNode.data.category),
+    [selectedNode.data.category],
   );
 
   const connectionChoices = useMemo(
-    () =>
-      displayedNextIds
+    () => {
+      const choices = new Map<string, KnowledgeNode>();
+      const addChoice = (node: KnowledgeNode | undefined) => {
+        if (!node || node.id === selectedNode.id) return;
+        choices.set(node.id, node);
+      };
+
+      const previousLevelNode = categoryNodes.find(
+        (node) => node.data.level === selectedNode.data.level - 1,
+      );
+
+      categoryNodes
+        .filter((node) => node.data.level === selectedNode.data.level)
+        .forEach(addChoice);
+
+      selectedNode.data.next
         .map((id) => getNode(id))
-        .filter((node): node is Node<LearningNodeData> => Boolean(node)),
-    [displayedNextIds],
+        .filter((node): node is KnowledgeNode => node !== undefined && node.data.level > selectedNode.data.level)
+        .forEach(addChoice);
+
+      addChoice(previousLevelNode);
+
+      return Array.from(choices.values()).sort((left, right) => {
+        const relationOrder: Record<FlowRelation, number> = { same: 0, next: 1, previous: 2 };
+        const leftRelation = getFlowRelation(selectedNode.data, left.data);
+        const rightRelation = getFlowRelation(selectedNode.data, right.data);
+        return relationOrder[leftRelation] - relationOrder[rightRelation] || left.data.level - right.data.level;
+      });
+    },
+    [categoryNodes, selectedNode],
   );
   const connectionItems = useMemo(
     () =>
@@ -329,8 +249,16 @@ export function App() {
       })),
     [connectionChoices, selectedNode.data],
   );
+  const connectionGroups = useMemo(
+    () => ({
+      same: connectionItems.filter(({ node }) => getFlowRelation(selectedNode.data, node.data) === 'same'),
+      next: connectionItems.filter(({ node }) => getFlowRelation(selectedNode.data, node.data) === 'next'),
+      previous: connectionItems.filter(({ node }) => getFlowRelation(selectedNode.data, node.data) === 'previous'),
+    }),
+    [connectionItems, selectedNode.data],
+  );
   const firstSteps = selectedNode.data.observe.slice(0, 3);
-  const logExample = getLogExample(selectedNode.data);
+  const beginnerGuide = getBeginnerGuide(selectedNode.data);
 
   const focusNode = useCallback(
     (nodeId: string) => {
@@ -339,61 +267,18 @@ export function App() {
       setSelectedNodeId(nodeId);
       setSelectedCategory(node.data.category);
       setDetailDominant(true);
-      setHistory((current) => {
-        if (current[current.length - 1] === nodeId) return current;
-        return [...current.slice(-7), nodeId];
-      });
-      requestAnimationFrame(() => {
-        const corridor = getFlowWindowIds(nodeId, node.data.category, selectedNodeId).map((id) => ({
-          id,
-        }));
-        flow?.fitView({ nodes: corridor, duration: 1120, padding: 0.2 });
-      });
     },
-    [flow, selectedNodeId],
+    [],
   );
 
   const chooseCategory = useCallback((categoryId: CategoryId) => {
     const category = getCategory(categoryId);
     setSelectedCategory(categoryId);
     setSelectedNodeId(category.rootNodeId);
-    setHistory([category.rootNodeId]);
     setDetailDominant(false);
     setGateState('workspace');
     window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'auto' }));
   }, []);
-
-  useEffect(() => {
-    if (!flow || gateState !== 'workspace') return;
-    const timer = window.setTimeout(() => {
-      const corridor = getFlowWindowIds(selectedNodeId, selectedCategory).map((id) => ({ id }));
-      flow.fitView({ nodes: corridor, duration: 900, padding: 0.18 });
-    }, 120);
-    return () => window.clearTimeout(timer);
-  }, [flow, gateState, selectedCategory, selectedNodeId]);
-
-  useEffect(() => {
-    if (!flow || gateState !== 'workspace') return;
-    const onResize = () => {
-      const corridor = getFlowWindowIds(selectedNodeId, selectedCategory, previousNodeId).map((id) => ({
-        id,
-      }));
-      flow.fitView({ nodes: corridor, duration: 420, padding: 0.24 });
-    };
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, [flow, gateState, previousNodeId, selectedCategory, selectedNodeId]);
-
-  useEffect(() => {
-    if (!flow || gateState !== 'workspace') return;
-    const timer = window.setTimeout(() => {
-      const corridor = getFlowWindowIds(selectedNodeId, selectedCategory, previousNodeId).map((id) => ({
-        id,
-      }));
-      flow.fitView({ nodes: corridor, duration: 620, padding: detailDominant ? 0.28 : 0.18 });
-    }, 360);
-    return () => window.clearTimeout(timer);
-  }, [detailDominant, flow, gateState, previousNodeId, selectedCategory, selectedNodeId]);
 
   useEffect(() => {
     if (gateState !== 'workspace') return;
@@ -469,47 +354,79 @@ export function App() {
             <h1>{selectedNode.data.title}</h1>
           </div>
         </div>
-        <div className="connection-rail" aria-label="node connections">
-          <div className="connection-current">
-            <span>今見ている</span>
-            <strong>{selectedNode.data.title}</strong>
-          </div>
-          <div className="connection-next">
-            <span>次に進める</span>
-            <div>
-              {connectionItems.map(({ node, kind }) => (
-                <button
-                  className={`relation-${getFlowRelation(selectedNode.data, node.data)}`}
-                  key={node.id}
-                  onClick={() => focusNode(node.id)}
-                  type="button"
-                >
-                  <em aria-hidden="true" />
-                  <span className="sr-only">{kind}</span>
-                  {node.data.title}
-                </button>
-              ))}
+        <section className="node-corridor" aria-label="node connections">
+          <div className="corridor-section corridor-current-section">
+            <span className="corridor-label sr-only">現在地</span>
+            <div className="corridor-card corridor-card-current">
+              <span className="sr-only">{phaseUi[selectedNode.data.phase].label}</span>
+              <strong>{selectedNode.data.title}</strong>
             </div>
           </div>
-        </div>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          onInit={setFlow}
-          onNodeClick={(_, node) => focusNode(node.id)}
-          fitView
-          elementsSelectable={false}
-          nodesConnectable={false}
-          nodesDraggable={false}
-          multiSelectionKeyCode={null}
-          selectionKeyCode={null}
-          selectNodesOnDrag={false}
-          minZoom={0.45}
-          maxZoom={1.6}
-        >
-          <Background color="#1b2a31" gap={34} size={0.6} />
-        </ReactFlow>
+
+          {connectionGroups.same.length > 0 && (
+            <div className="corridor-section corridor-same-section">
+              <span className="corridor-label sr-only">同じ段階で見る</span>
+              <div className="corridor-choice-grid">
+                {connectionGroups.same.map(({ node }) => (
+                  <button
+                    aria-label={`同じ段階で見る: ${node.data.title}`}
+                    className="corridor-card corridor-card-button relation-same"
+                    key={node.id}
+                    onClick={() => focusNode(node.id)}
+                    type="button"
+                  >
+                    <span className="sr-only">同じ段階</span>
+                    <strong>{node.data.title}</strong>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {connectionGroups.next.length > 0 && (
+            <div className="corridor-section corridor-next-section">
+              <span className="corridor-label sr-only">次の段階へ進む</span>
+              <div className="corridor-choice-grid">
+                {connectionGroups.next.map(({ node }) => (
+                  <button
+                    aria-label={`次の段階へ進む: ${node.data.title}`}
+                    className="corridor-card corridor-card-button relation-next"
+                    key={node.id}
+                    onClick={() => focusNode(node.id)}
+                    type="button"
+                  >
+                    <span className="sr-only">次の段階</span>
+                    <strong>{node.data.title}</strong>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {connectionGroups.previous.length > 0 && (
+            <div className="corridor-section corridor-previous-section">
+              <span className="corridor-label sr-only">前提へ戻る</span>
+              <div className="corridor-choice-grid">
+                {connectionGroups.previous.map(({ node }) => (
+                  <button
+                    aria-label={`前の階層へ戻る: ${getConnectionLabel(selectedNode.data, node.data)}`}
+                    className="corridor-card corridor-card-button relation-previous"
+                    key={node.id}
+                    onClick={() => focusNode(node.id)}
+                    type="button"
+                  >
+                    <span className="sr-only">前提確認</span>
+                    <strong>{getConnectionLabel(selectedNode.data, node.data)}</strong>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {connectionItems.length === 0 && (
+            <p className="corridor-empty">この観察を記録して、別のジャンルか前の段階を見直す。</p>
+          )}
+        </section>
       </main>
 
       <aside className="detail-panel">
@@ -526,125 +443,50 @@ export function App() {
               <p className="lead">{compactText(selectedNode.data.summary)}</p>
             </div>
 
-            <section className="learning-brief">
-              <h3>ゴール</h3>
-              <p>{phaseUi[activePhase].guide}</p>
-              <div className="takeaway-list" aria-label="このノードで増える手札">
-                {getTakeaways(selectedNode.data).map((item) => (
-                  <span key={item}>{item}</span>
-                ))}
+            <ScreenshotMock node={selectedNode.data} nodeId={selectedNode.id} />
+
+            <section className="beginner-guide" aria-label="beginner guide">
+              <h3>読み方</h3>
+              <div>
+                <p>{beginnerGuide.start}</p>
+                <p>{beginnerGuide.why}</p>
+                <p>{beginnerGuide.compare}</p>
               </div>
-              <details className="brief-more">
-                <summary><SummaryLabel>最初の3手</SummaryLabel></summary>
-                <p>{compactText(selectedNode.data.intent)}</p>
-                <ol>
-                  {firstSteps.map((item) => (
-                    <li key={item.label}>{compactText(item.how)}</li>
-                  ))}
-                </ol>
-              </details>
             </section>
 
-            <details className="screenshot-block">
-              <summary><SummaryLabel>画面例を見る</SummaryLabel></summary>
-              <ScreenshotMock node={selectedNode.data} />
-            </details>
-
-            <details className="detail-block">
-              <summary><SummaryLabel>何それ？</SummaryLabel></summary>
-              <div className="doc-split">
-                <div>
-                  <strong>定義</strong>
-                  <p>{selectedNode.data.what}</p>
-                </div>
-                <div>
-                  <strong>例</strong>
-                  <ul>
-                    {getExampleItems(selectedNode.data).map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <strong>よくある勘違い</strong>
-                  <p>見えている単語やツール名だけで判断しない。何を見て、何が根拠で、次にどこへ進むかを分ける</p>
-                </div>
-              </div>
-            </details>
-
-            <details className="detail-block">
-              <summary><SummaryLabel>なぜ見るか</SummaryLabel></summary>
-              <p>{compactText(selectedNode.data.intent)}</p>
-              <p className="risk-note">{getRiskText(selectedNode.data)}</p>
-            </details>
-
-            <details className="detail-block">
-              <summary><SummaryLabel>どう見るか</SummaryLabel></summary>
-              <ol className="observe-list">
-                {selectedNode.data.observe.slice(0, 4).map((item) => (
+            <section className="learning-brief">
+              <h3>最初に見ること</h3>
+              <p>{selectedNode.data.intent}</p>
+              <ol>
+                {firstSteps.map((item) => (
                   <li key={item.label}>
                     <strong>{item.label}</strong>
-                    <p>{compactText(item.how)}</p>
-                    <details className="inline-help">
-                      <summary><SummaryLabel>何それ？</SummaryLabel></summary>
-                      <p>{compactText(item.what)}</p>
-                      <p>{getObserveExample(item)}</p>
-                      <p>{getObserveNextHint(item, selectedNode.data)}</p>
-                    </details>
+                    <span>{item.how}</span>
+                    <em>{item.what}</em>
                   </li>
                 ))}
               </ol>
-            </details>
-
-            <section className="detail-explain-grid">
-              <details>
-                <summary><SummaryLabel>ミニ例</SummaryLabel></summary>
-                <p>{getMiniExample(selectedNode.data)}</p>
-              </details>
-              <details>
-                <summary><SummaryLabel>判断基準</SummaryLabel></summary>
-                <p>{getDecisionText(selectedNode.data)}</p>
-                <ul className="decision-list">
-                  <li>進む: 見たもの、分かったこと、次に見る理由を一文で言える</li>
-                  <li>戻る: どの画面、通信、ファイル、ログを根拠にしたか説明できない</li>
-                  <li>分岐: 条件が見えたら、下の「条件が見えたら」から近いノードへ進む</li>
-                </ul>
-              </details>
             </section>
 
-            <details className="detail-block">
-              <summary><SummaryLabel>どうなっていたら選択肢が増えるか</SummaryLabel></summary>
-              <ul>
-                {selectedNode.data.branches.length > 0 ? (
-                  selectedNode.data.branches.map((branch) => (
-                    <li key={`${branch.signal}-choice`}>
-                      <strong>{branch.signal}</strong>
-                      <span>{branch.action}</span>
-                    </li>
-                  ))
-                ) : (
-                  <li>同じ観察を別の場所でも説明できたら、次の段階へ進む</li>
-                )}
-              </ul>
-            </details>
-
-            <section className="detail-next-strip" aria-label="next learning nodes">
-              <span>おすすめの次</span>
-              <div>
-                {connectionItems.map(({ node, kind }) => (
-                  <button
-                    className={`relation-${getFlowRelation(selectedNode.data, node.data)}`}
-                    key={node.id}
-                    onClick={() => focusNode(node.id)}
-                    type="button"
-                  >
-                    <em aria-hidden="true" />
-                    <span className="sr-only">{kind}</span>
-                    <strong>{node.data.title}</strong>
-                  </button>
-                ))}
-              </div>
-            </section>
+            {connectionItems.length > 0 && (
+              <section className="detail-next-strip" aria-label="next learning nodes">
+                <span>次に見る</span>
+                <div>
+                  {connectionItems.map(({ node, kind }) => (
+                    <button
+                      className={`relation-${getFlowRelation(selectedNode.data, node.data)}`}
+                      key={node.id}
+                      onClick={() => focusNode(node.id)}
+                      type="button"
+                    >
+                      <em aria-hidden="true" />
+                      <span className="sr-only">{kind}</span>
+                      <strong>{getConnectionLabel(selectedNode.data, node.data)}</strong>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {selectedNode.data.branches.length > 0 && (
               <details className="detail-block">
@@ -670,17 +512,13 @@ export function App() {
             )}
 
             <details className="detail-block">
-              <summary><SummaryLabel>詳しく読む</SummaryLabel></summary>
+              <summary><SummaryLabel>補足</SummaryLabel></summary>
+              <p>{selectedNode.data.what}</p>
               <p>{selectedNode.data.details}</p>
+              <p>
+                初心者はツール名や脆弱性名に飛びつきやすいが、このノードではまず「見えた事実」「それを見た場所」「次に確認する理由」を分ける。三つを一文で説明できると、次のノードへ進む判断が安定する。
+              </p>
               <p className="safety-note">{selectedNode.data.safety}</p>
-            </details>
-
-            <details className="note-template">
-              <summary><SummaryLabel>観察ログ</SummaryLabel></summary>
-              <p>見たもの: {logExample.seen}</p>
-              <p>分かったこと: {logExample.learned}</p>
-              <p>まだ不明なこと: {logExample.unknown}</p>
-              <p>次に確認すること: {logExample.next}</p>
             </details>
           </motion.section>
       </aside>
@@ -696,8 +534,6 @@ type CategoryGateProps = {
 };
 
 function CategoryGate({ onSelect }: CategoryGateProps) {
-  const [openHelpId, setOpenHelpId] = useState<CategoryId | null>(null);
-
   return (
     <motion.section
       className="category-gate"
@@ -705,61 +541,32 @@ function CategoryGate({ onSelect }: CategoryGateProps) {
       animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
       exit={{ opacity: 0, y: -8, filter: 'blur(14px)' }}
       transition={{ duration: 0.34, ease: [0.2, 0.9, 0.2, 1] }}
-      onClickCapture={(event) => {
-        if (!openHelpId) return;
-        const target = event.target as HTMLElement;
-        if (target.closest('.category-card.is-help-open')) return;
-        event.preventDefault();
-        event.stopPropagation();
-        setOpenHelpId(null);
-      }}
     >
       <div className="category-shell">
         <div className="category-heading">
           <h1>ジャンルを選ぶ</h1>
         </div>
-        <div className={`category-grid ${openHelpId ? 'has-help-focus' : ''}`}>
+        <div className="category-grid">
           {categories.map((category) => (
             <article
-              className={`category-card ${
-                openHelpId === category.id ? 'is-help-open' : openHelpId ? 'is-help-dimmed' : ''
-              }`}
+              className="category-card"
               key={category.id}
               style={{ '--node-color': category.color } as React.CSSProperties}
             >
               <button
                 className="category-main"
-                onClick={() => {
-                  if (openHelpId) {
-                    setOpenHelpId(null);
-                    return;
-                  }
-                  onSelect(category.id);
-                }}
+                onClick={() => onSelect(category.id)}
                 type="button"
               >
                 <small>{category.englishTitle}</small>
                 <strong>{category.title}</strong>
                 <span className="category-keywords">
-                  {getCategoryKeywords(category).map((keyword) => (
+                  {getCategoryKeywords(category).slice(0, 3).map((keyword) => (
                     <span key={keyword}>{keyword}</span>
                   ))}
                 </span>
+                <em>はじめる</em>
               </button>
-              <details
-                onToggle={(event) => {
-                  const isOpen = event.currentTarget.open;
-                  if (isOpen) {
-                    setOpenHelpId(category.id);
-                    return;
-                  }
-                  setOpenHelpId((current) => (current === category.id ? null : current));
-                }}
-                open={openHelpId === category.id}
-              >
-                <summary><SummaryLabel>何それ？</SummaryLabel></summary>
-                <p>{category.what}</p>
-              </details>
             </article>
           ))}
         </div>
@@ -834,6 +641,10 @@ function NoticeGate({ agreed, checks, onCheckChange, onEnter }: NoticeGateProps)
         <p>
           HackerLakeは攻撃手順を配るサイトではありません CTFと自分の検証環境で、状況を読み、次の一手を選ぶための訓練用UIです
         </p>
+        <details className="notice-detail">
+          <summary><SummaryLabel>利用範囲</SummaryLabel></summary>
+          <p>許可されていない対象は、スキャンだけでも法律や規約に抵触する可能性があります。不正アクセスや実サービスへの試行を推奨しません。</p>
+        </details>
         <div className="notice-list">
           {noticeItems.map((item) => (
             <label className={`notice-check ${checks[item.id] ? 'checked' : ''}`} key={item.id}>

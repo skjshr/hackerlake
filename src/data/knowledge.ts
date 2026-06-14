@@ -1196,12 +1196,12 @@ function nodeId(categoryId: CategoryId, seedId: string) {
 function buildBranches(plan: CategoryPlan, phaseIndex: number, nodeIndex: number): Branch[] {
   const currentPhase = plan.phases[phaseIndex];
   const currentNodes = currentPhase.nodes;
-  const samePhaseNext = currentNodes[(nodeIndex + 1) % currentNodes.length];
+  const samePhaseNext = currentNodes[nodeIndex + 1];
   const nextPhase = plan.phases[phaseIndex + 1];
   const previousPhase = plan.phases[phaseIndex - 1];
   const branches: Branch[] = [];
 
-  if (samePhaseNext.id !== currentNodes[nodeIndex].id) {
+  if (samePhaseNext) {
     branches.push({
       signal: `${currentPhase.phase}で別の観察点も残っている`,
       targetId: nodeId(plan.id, samePhaseNext.id),
@@ -1230,14 +1230,12 @@ function buildBranches(plan: CategoryPlan, phaseIndex: number, nodeIndex: number
 
 function buildNext(plan: CategoryPlan, phaseIndex: number, nodeIndex: number): string[] {
   const currentPhase = plan.phases[phaseIndex];
-  const ids = currentPhase.nodes
-    .filter((_, index) => index !== nodeIndex)
-    .map((seed) => nodeId(plan.id, seed.id));
+  const ids: string[] = [];
+  const samePhaseNext = currentPhase.nodes[nodeIndex + 1];
   const nextPhase = plan.phases[phaseIndex + 1];
-  const previousPhase = plan.phases[phaseIndex - 1];
 
+  if (samePhaseNext) ids.push(nodeId(plan.id, samePhaseNext.id));
   if (nextPhase) ids.push(nodeId(plan.id, nextPhase.nodes[0].id));
-  if (previousPhase) ids.push(nodeId(plan.id, previousPhase.nodes[0].id));
 
   return Array.from(new Set(ids));
 }
@@ -1276,7 +1274,6 @@ const edgePairs = allPlans.flatMap((plan) => {
     const phaseNodeIds = phasePlan.nodes.map((seed) => nodeId(plan.id, seed.id));
     if (phaseNodeIds.length > 1) {
       pairs.push([phaseNodeIds[0], phaseNodeIds[1], phasePlan.phase]);
-      pairs.push([phaseNodeIds[1], phaseNodeIds[0], phasePlan.phase]);
     }
 
     const nextPhase = plan.phases[phaseIndex + 1];

@@ -235,8 +235,7 @@ button {
 }
 
 .boot-frame::before,
-.notice-shell::before,
-.map-stage::before {
+.notice-shell::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -244,6 +243,11 @@ button {
   background: linear-gradient(120deg, transparent 0 42%, rgba(255, 255, 255, 0.08) 48%, transparent 54% 100%);
   transform: translateX(-120%);
   animation: lightSweep 4.6s ease-in-out infinite;
+}
+
+.map-stage::before {
+  content: none;
+  animation: none;
 }
 
 @keyframes lightSweep {
@@ -1281,6 +1285,18 @@ button {
   display: none;
 }
 
+.app-shell.detail-dominant .connection-next > div {
+  display: grid;
+  grid-template-columns: 1fr;
+  overflow: visible;
+}
+
+.app-shell.detail-dominant .connection-next button {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
 .connection-current,
 .connection-next {
   border: 1px solid color-mix(in srgb, var(--theme-color) 18%, rgba(224, 214, 190, 0.1));
@@ -1371,11 +1387,12 @@ button {
 
 .connection-next button.relation-same em,
 .detail-next-strip button.relation-same em {
-  background: repeating-linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--theme-color) 66%, rgba(236, 234, 220, 0.24)) 0 4px,
-    transparent 4px 8px
-  );
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(236, 234, 220, 0.62);
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
 }
 
 .connection-next button.relation-next em,
@@ -1386,6 +1403,195 @@ button {
 .connection-next button.relation-previous em,
 .detail-next-strip button.relation-previous em {
   background: linear-gradient(90deg, var(--theme-color), transparent);
+}
+
+.node-corridor {
+  position: absolute;
+  inset: 112px 20px 24px;
+  display: grid;
+  align-content: center;
+  gap: 18px;
+  overflow: auto;
+  padding: 6px 4px 18px;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--theme-color) 42%, transparent) rgba(255, 255, 255, 0.03);
+}
+
+.corridor-section {
+  display: grid;
+  gap: 8px;
+  max-width: 420px;
+}
+
+.corridor-current-section {
+  max-width: 460px;
+}
+
+.corridor-next-section {
+  padding-left: 22px;
+}
+
+.corridor-previous-section {
+  padding-left: 10px;
+}
+
+.corridor-choice-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.corridor-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 40px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  column-gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid rgba(224, 214, 190, 0.12);
+  border-radius: 8px;
+  color: #f0eadc;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--theme-color) 7%, transparent), transparent 72%),
+    rgba(12, 15, 15, 0.9);
+  text-align: left;
+}
+
+.corridor-card-current {
+  min-height: 88px;
+  border-color: color-mix(in srgb, var(--theme-color) 42%, rgba(224, 214, 190, 0.16));
+  border-left: 7px solid var(--theme-color);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--theme-color) 24%, transparent), transparent 78%),
+    rgba(13, 16, 16, 0.96);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--theme-color) 18%, transparent),
+    0 0 28px color-mix(in srgb, var(--theme-color) 8%, transparent);
+}
+
+.corridor-card::after {
+  content: "";
+  display: block;
+  grid-column: 2;
+  width: 30px;
+  height: 30px;
+  justify-self: end;
+}
+
+.corridor-card-current::after {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #07100c;
+  border-radius: 999px;
+  background: var(--theme-color);
+  box-shadow:
+    0 0 0 7px color-mix(in srgb, var(--theme-color) 16%, transparent),
+    0 0 24px color-mix(in srgb, var(--theme-color) 38%, transparent);
+}
+
+.corridor-card span {
+  grid-column: 1;
+  min-width: 0;
+  color: rgba(236, 234, 222, 0.6);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.corridor-card strong {
+  grid-column: 1;
+  min-width: 0;
+  color: #f0eadc;
+  font-family: var(--font-display);
+  font-size: clamp(15px, 1.5vw, 21px);
+  line-height: 1.35;
+}
+
+.corridor-card-current strong {
+  font-size: clamp(18px, 1.9vw, 25px);
+}
+
+.corridor-card-button {
+  cursor: pointer;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease;
+}
+
+.corridor-card-button:hover,
+.corridor-card-button:focus-visible {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--theme-color) 48%, rgba(224, 214, 190, 0.18));
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--theme-color) 12%, transparent), transparent 72%),
+    rgba(17, 20, 19, 0.96);
+  outline: none;
+}
+
+.corridor-card-button.relation-next {
+  min-height: 78px;
+  border-color: color-mix(in srgb, var(--theme-color) 34%, rgba(224, 214, 190, 0.14));
+  border-left: 7px solid color-mix(in srgb, var(--theme-color) 88%, #f0eadc);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--theme-color) 17%, transparent), transparent 78%),
+    rgba(13, 16, 16, 0.94);
+}
+
+.corridor-card-button.relation-next::after {
+  width: 34px;
+  height: 34px;
+  background: color-mix(in srgb, var(--theme-color) 92%, #f0eadc);
+  clip-path: polygon(0 34%, 55% 34%, 55% 12%, 100% 50%, 55% 88%, 55% 66%, 0 66%);
+  filter: drop-shadow(0 0 16px color-mix(in srgb, var(--theme-color) 28%, transparent));
+}
+
+.corridor-card-button.relation-same {
+  min-height: 68px;
+  border-color: rgba(224, 214, 190, 0.14);
+  border-left: 3px solid rgba(224, 214, 190, 0.36);
+  background:
+    linear-gradient(90deg, rgba(224, 214, 190, 0.035), transparent 72%),
+    rgba(12, 15, 15, 0.9);
+}
+
+.corridor-card-button.relation-same::after {
+  width: 18px;
+  height: 18px;
+  align-self: center;
+  border: 2px solid rgba(236, 234, 220, 0.62);
+  border-radius: 999px;
+  background: transparent;
+}
+
+.corridor-card-button.relation-previous {
+  min-height: 68px;
+  border-color: rgba(224, 214, 190, 0.12);
+  border-left: 3px solid rgba(180, 137, 87, 0.64);
+  background: rgba(12, 15, 15, 0.86);
+}
+
+.corridor-card-button.relation-previous::after {
+  width: 24px;
+  height: 24px;
+  border-left: 2px solid rgba(180, 137, 87, 0.72);
+  border-bottom: 2px solid rgba(180, 137, 87, 0.72);
+  transform: rotate(45deg);
+}
+
+.corridor-empty {
+  max-width: 420px;
+  margin: 0;
+  padding: 13px 14px;
+  border: 1px solid rgba(224, 214, 190, 0.1);
+  border-radius: 8px;
+  color: rgba(236, 234, 222, 0.66);
+  background: rgba(12, 15, 15, 0.82);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 .react-flow {
@@ -1409,13 +1615,13 @@ button {
   inset: 42px 32px 94px;
   pointer-events: none;
   background:
-    linear-gradient(90deg, transparent, color-mix(in srgb, var(--theme-color) 18%, transparent), transparent) 0 50% / 100% 1px no-repeat,
+    linear-gradient(90deg, transparent, color-mix(in srgb, var(--theme-color) 10%, transparent), transparent) 0 50% / 100% 1px no-repeat,
     repeating-linear-gradient(
       90deg,
-      rgba(224, 214, 190, 0.055) 0 1px,
+      rgba(224, 214, 190, 0.026) 0 1px,
       transparent 1px 20%
     );
-  opacity: 0.42;
+  opacity: 0.28;
   mask-image: linear-gradient(90deg, transparent, black 14%, black 86%, transparent);
 }
 
@@ -1425,19 +1631,23 @@ button {
 
 .react-flow__edge.edge-hot path {
   stroke: var(--theme-color);
-  stroke-width: 1.8;
-  stroke-opacity: 0.62;
-  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--theme-color) 36%, transparent));
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-opacity: 0.88;
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--theme-color) 46%, transparent));
 }
 
 .react-flow__edge.edge-calm path {
   stroke: rgba(224, 214, 190, 0.18);
-  stroke-width: 1;
-  stroke-opacity: 0.14;
+  stroke-width: 1.55;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-opacity: 0.26;
 }
 
 .react-flow__edge.edge-lateral path {
-  stroke-dasharray: 6 9;
+  stroke-dasharray: none;
 }
 
 .react-flow__edge.edge-forward path {
@@ -1463,9 +1673,8 @@ button {
 
 .react-flow__node::before,
 .react-flow__node::after {
-  content: "";
-  position: absolute;
-  pointer-events: none;
+  content: none;
+  display: none;
 }
 
 .react-flow__node::before {
@@ -1489,6 +1698,7 @@ button {
   top: 50%;
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(224, 214, 190, 0.12), transparent);
+  opacity: 0;
 }
 
 .react-flow__node.node-current::before {
@@ -1501,6 +1711,7 @@ button {
 .react-flow__node.node-next::after {
   height: 2px;
   background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--theme-color) 58%, transparent), transparent);
+  opacity: 0;
 }
 
 .react-flow__node.node-same::after {
@@ -1510,6 +1721,7 @@ button {
     rgba(224, 214, 190, 0.22) 5px 9px,
     transparent 9px 14px
   );
+  opacity: 0;
 }
 
 .react-flow__node:hover .learning-node {
@@ -1570,15 +1782,34 @@ button {
 }
 
 .node-handle {
-  display: none;
+  display: block;
+  width: 10px;
+  height: 10px;
+  border: 1px solid color-mix(in srgb, var(--node-color) 82%, #f0eadc);
+  border-radius: 999px;
+  background: #080a09;
+  box-shadow:
+    0 0 0 3px rgba(5, 6, 6, 0.88),
+    0 0 14px color-mix(in srgb, var(--node-color) 34%, transparent);
+  opacity: 0.8;
+  pointer-events: none;
 }
 
 .node-handle-target {
-  left: -4px;
+  left: -6px;
 }
 
 .node-handle-source {
-  right: -4px;
+  right: -6px;
+}
+
+.react-flow__node.is-focus-node .node-handle,
+.react-flow__node.is-choice-node .node-handle {
+  background: var(--node-color);
+  opacity: 1;
+  box-shadow:
+    0 0 0 3px rgba(5, 6, 6, 0.9),
+    0 0 18px color-mix(in srgb, var(--node-color) 52%, transparent);
 }
 
 .learning-node strong {
@@ -1654,6 +1885,7 @@ button {
   border-bottom: 1px solid color-mix(in srgb, var(--theme-color) 26%, rgba(224, 214, 190, 0.1));
 }
 
+.beginner-guide,
 .learning-brief {
   display: grid;
   gap: 8px;
@@ -1666,11 +1898,20 @@ button {
     rgba(255, 255, 255, 0.026);
 }
 
+.beginner-guide {
+  border-left: 4px solid var(--theme-color);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--theme-color) 13%, transparent), transparent 74%),
+    rgba(255, 255, 255, 0.024);
+}
+
+.app-shell.detail-dominant .beginner-guide,
 .app-shell.detail-dominant .learning-brief {
   max-width: 860px;
   padding: 16px 18px;
 }
 
+.beginner-guide h3,
 .learning-brief h3 {
   margin: 0;
   color: color-mix(in srgb, var(--theme-color) 48%, #eff7f2);
@@ -1678,11 +1919,18 @@ button {
   font-weight: 720;
 }
 
+.beginner-guide div {
+  display: grid;
+  gap: 9px;
+}
+
+.beginner-guide p,
 .learning-brief p {
   margin: 0;
   color: #c7d0ca;
-  font-size: 13px;
-  line-height: 1.72;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  line-height: 1.82;
 }
 
 .brief-more {
@@ -1740,15 +1988,38 @@ button {
 
 .learning-brief ol {
   display: grid;
-  gap: 6px;
-  margin: 4px 0 0;
-  padding-left: 20px;
+  gap: 9px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
 }
 
 .learning-brief li {
+  display: grid;
+  gap: 4px;
+  padding: 10px 11px;
+  border: 1px solid rgba(224, 214, 190, 0.1);
+  border-radius: 6px;
   color: #d0c9b8;
-  font-size: 12px;
+  background: rgba(255, 255, 255, 0.024);
+  font-family: var(--font-body);
+  font-size: 12.5px;
   line-height: 1.65;
+}
+
+.learning-brief li strong {
+  color: #f0eadc;
+  font-family: var(--font-display);
+  font-size: 13.5px;
+}
+
+.learning-brief li span {
+  color: #d5ddd7;
+}
+
+.learning-brief li em {
+  color: rgba(236, 234, 222, 0.68);
+  font-style: normal;
 }
 
 .detail-next-strip {
@@ -1855,6 +2126,42 @@ button {
   box-shadow:
     0 18px 44px rgba(0, 0, 0, 0.34),
     inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.learning-brief,
+.detail-block,
+.detail-explain-grid,
+.note-template,
+.observe-list > li,
+.detail-next-strip,
+.screen-mock {
+  position: relative;
+  transform-origin: center top;
+  transition:
+    transform 220ms cubic-bezier(0.2, 0.9, 0.2, 1),
+    border-color 180ms ease,
+    box-shadow 220ms ease,
+    filter 220ms ease,
+    background 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .learning-brief:hover,
+  .detail-block:hover,
+  .detail-explain-grid:hover,
+  .note-template:hover,
+  .observe-list > li:hover,
+  .detail-next-strip:hover,
+  .screen-mock:hover {
+    z-index: 3;
+    transform: translateY(-2px) scale(1.018);
+    border-color: color-mix(in srgb, var(--theme-color) 44%, rgba(224, 214, 190, 0.2));
+    filter: brightness(1.06);
+    box-shadow:
+      0 18px 42px rgba(0, 0, 0, 0.28),
+      0 0 0 1px color-mix(in srgb, var(--theme-color) 28%, rgba(224, 214, 190, 0.1)),
+      0 0 26px color-mix(in srgb, var(--theme-color) 14%, transparent);
+  }
 }
 
 .topic-screen-body {
@@ -2507,6 +2814,7 @@ button {
 .detail-panel h2,
 .stage-header h1,
 .brand strong,
+.beginner-guide h3,
 .learning-brief h3,
 .summary-label,
 .phase-track span,
@@ -2524,6 +2832,7 @@ button {
 }
 
 .lead,
+.beginner-guide p,
 .learning-brief p,
 .learning-brief li,
 .detail-block p,
@@ -2587,6 +2896,14 @@ button {
   font-size: 25px;
 }
 
+.category-main em {
+  margin-top: 10px;
+  color: color-mix(in srgb, var(--node-color) 78%, #f0eadc);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+}
+
 .category-keywords {
   gap: 10px;
 }
@@ -2598,6 +2915,36 @@ button {
   color: rgba(236, 234, 222, 0.64);
   background: transparent;
   font-size: 12px;
+}
+
+.notice-detail {
+  margin: 12px 0 4px;
+  border-top: 1px solid rgba(224, 214, 190, 0.12);
+  border-bottom: 1px solid rgba(224, 214, 190, 0.08);
+}
+
+.notice-detail summary {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  color: rgba(240, 234, 220, 0.8);
+  cursor: pointer;
+  list-style: none;
+}
+
+.notice-detail summary::-webkit-details-marker {
+  display: none;
+}
+
+.notice-detail summary::after {
+  content: "+";
+  color: var(--green);
+  font-family: var(--font-mono);
+}
+
+.notice-detail[open] summary::after {
+  content: "-";
 }
 
 .category-card details {
@@ -2757,15 +3104,18 @@ button {
   color: #d6dcd6;
 }
 
+.beginner-guide,
 .learning-brief {
   border-left: 4px solid var(--theme-color);
 }
 
+.beginner-guide h3,
 .learning-brief h3 {
   color: #f0eadc;
   font-size: 15px;
 }
 
+.beginner-guide p,
 .learning-brief p,
 .learning-brief li,
 .detail-block p,
@@ -2893,6 +3243,10 @@ button {
   background: #0c0f10;
 }
 
+.generated-screen-img {
+  border-bottom: 1px solid color-mix(in srgb, var(--theme-color) 20%, rgba(224, 214, 190, 0.1));
+}
+
 .screen-mock figcaption {
   display: flex;
   gap: 8px;
@@ -2922,6 +3276,10 @@ button {
     min-height: 100vh;
     height: auto;
     overflow-x: hidden;
+  }
+
+  .app-shell.detail-dominant {
+    grid-template-columns: 1fr;
   }
 
   .topbar,
@@ -3094,5 +3452,15 @@ button {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.001ms !important;
+  }
+
+  .learning-brief:hover,
+  .detail-block:hover,
+  .detail-explain-grid:hover,
+  .note-template:hover,
+  .observe-list > li:hover,
+  .detail-next-strip:hover,
+  .screen-mock:hover {
+    transform: none !important;
   }
 }
