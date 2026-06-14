@@ -56,6 +56,51 @@ function getCategoryKeywords(category: typeof categories[number]) {
 
 type FlowRelation = 'same' | 'next' | 'previous';
 
+const categoryDeepGuides: Record<CategoryId, { example: string; trap: string; memo: string }> = {
+  web: {
+    example:
+      '例として、フォームを見る時は入力欄だけでなく、送信先URL、HTTP status、Cookieの増減、画面に戻る値を一緒に見る。ボタンを押せたかではなく、サーバが何を受け取り何を返したかが根拠になる。',
+    trap:
+      '初心者は「ログインできた」「エラーが出た」で止まりやすい。Webでは、表示差分、応答差分、保存された状態を分けないと、認証・認可・入力処理が混ざって見える。',
+    memo: 'URL / 操作 / status / 変わったCookieや画面 / 次に見る差分、の順に残す。',
+  },
+  network: {
+    example:
+      '例として、開いている入口を見つけたら、番号ではなく役割で書く。Webなのか、名前解決なのか、ファイル共有なのか、管理用らしいのかを分けると次の観察が決まる。',
+    trap:
+      'ポート番号を多く集めるほど進んだ気分になるが、範囲と役割が曖昧なままだと誤爆しやすい。Networkでは、何を見てよいかを固定すること自体が前進。',
+    memo: '対象 / 到達した入口 / 返った応答 / 内部っぽい語 / 対象外にした範囲、を分ける。',
+  },
+  forensics: {
+    example:
+      '例として、ファイルを開く前に名前、サイズ、時刻、形式、作成元らしき情報を見る。中身より先に外側を読むと、どの道具で見るか、時系列で見るか、差分で見るかを選べる。',
+    trap:
+      '怪しい文字列や画像だけに飛びつくと、証拠のつながりが切れる。Forensicsでは、単発の発見より「どこから来て、いつ変わり、何とつながるか」が重要。',
+    memo: '証拠名 / 外側の属性 / 見つけた痕跡 / 時刻や関係先 / まだ説明できない穴、を残す。',
+  },
+  crypto: {
+    example:
+      '例として、`=`で終わる短い文字列は表記変換の候補、同じ長さの値が並ぶならブロックやハッシュの候補、同じnonceらしき値が再利用されているなら前提崩れの候補として見る。',
+    trap:
+      '読めない文字列を全部「暗号」と呼ぶと迷子になる。Cryptoでは、エンコード、ハッシュ、暗号、署名、乱数、鍵、nonceをまず役割で分ける。',
+    memo: '与えられた値 / 長さと形式 / 秘密か公開か / 再利用や偏り / 成立しそうな前提、を並べる。',
+  },
+  reverse: {
+    example:
+      '例として、成功文、失敗文、usage、debug、verifyのような文字列を先に拾う。そこから入力がどこで読まれ、どう加工され、何と比較されるかを短い経路として追う。',
+    trap:
+      '命令を上から全部読むとすぐ疲れる。Reverseでは、入力、変換、比較、分岐、出力だけを先に結び、読まなくてよい部分を増やすのが大事。',
+    memo: '入力の形 / 関係する文字列 / 比較対象 / 成功分岐 / まだ読めない処理、を残す。',
+  },
+  pwn: {
+    example:
+      '例として、入力がstdinか引数かファイルかを分け、何bytesまで受けるか、どこで止まるか、落ち方が毎回同じかを見る。保護機構は解法名ではなく、何を防いでいるかで読む。',
+    trap:
+      'クラッシュしただけでは根拠にならない。Pwnでは、入力サイズ、終端、保護機構、権限、影響範囲を分けて初めて「何が危ないか」が説明できる。',
+    memo: '入口 / 長さ境界 / 落ち方 / 有効な保護 / 読み・書き・制御のどれに近いか、を残す。',
+  },
+};
+
 function getConnectionKind(current: LearningNodeData, target: LearningNodeData) {
   if (target.level > current.level) return '次の段階';
   if (target.level < current.level) return '前提確認';
@@ -103,6 +148,79 @@ function getBeginnerGuide(node: LearningNodeData) {
   };
 }
 
+function getNodeFocus(node: LearningNodeData) {
+  const primary = node.observe[0];
+  return primary
+    ? {
+        label: primary.label,
+        text: `${primary.how} ここで見るのは正解そのものではなく、次に深掘りする根拠です。`,
+      }
+    : {
+        label: node.title,
+        text: 'まず対象を一つに絞り、見えた事実を短く書き出します。',
+      };
+}
+
+function getJudgementGuide(node: LearningNodeData) {
+  const first = node.observe[0];
+  const second = node.observe[1];
+  const nextBranch = node.branches.find((branch) => branch.signal.includes('次'));
+  const backBranch = node.branches.find((branch) => branch.signal.includes('根拠'));
+
+  return {
+    ready: first
+      ? `「${first.label}」について、どこを見て、何が分かったかを一文で言える。`
+      : '見えた事実と、それを見た場所を一文で言える。',
+    compare: second
+      ? `「${second.label}」も確認し、最初の見立てが別の場所からも説明できる。`
+      : '同じ判断を別の表示、ログ、ファイル、値のどれかで確認できる。',
+    next: nextBranch?.signal ?? '次に見る理由が説明できる',
+    back: backBranch?.signal ?? '根拠が弱い、または前提が曖昧',
+  };
+}
+
+function getStuckGuide(node: LearningNodeData) {
+  const first = node.observe[0];
+  const second = node.observe[1];
+  const phase = phaseUi[node.phase];
+
+  return [
+    first
+      ? `まず「${first.label}」以外を一度閉じる。広く見るほど、何が根拠か分からなくなります。`
+      : '一度、見ている対象を一つだけに絞ります。',
+    second
+      ? `次に「${second.label}」を見て、同じ説明が成り立つかだけ確認します。違う説明になるなら前提がずれています。`
+      : '同じ画面を見続けず、別の表示やログで同じ事実が確認できるか見ます。',
+    `${phase.label}の段階では、${phase.guide}。この範囲を超えて作業しそうなら前の階層へ戻ります。`,
+  ];
+}
+
+function getMemoGuide(node: LearningNodeData) {
+  const first = node.observe[0];
+  const second = node.observe[1];
+  return {
+    fact: first ? `${first.label}: ${first.what}` : `${node.title}: 見えた事実を書く`,
+    place: first ? `見た場所: ${first.how}` : '見た場所: 画面、ログ、ファイル、通信、値のどれかを書く',
+    reason: second
+      ? `次に見る理由: ${second.label}で同じ説明が成り立つか確認する`
+      : '次に見る理由: まだ説明できない前提を一つだけ確認する',
+  };
+}
+
+function getScreenNotes(node: LearningNodeData) {
+  const first = node.observe[0];
+  const second = node.observe[1];
+  return {
+    observation: first
+      ? `${first.label}: ${first.how}`
+      : `${node.title}: 画面、ログ、ファイル、通信のどれを見ているか決める`,
+    judgement: second
+      ? `${second.label}も見て、同じ説明が通るか確認`
+      : '見えた事実が一つだけなら、まだ判断を保留する',
+    next: node.branches.find((branch) => branch.signal.includes('次'))?.action ?? '根拠を説明できたら次の段階へ進む',
+  };
+}
+
 function SummaryLabel({ children }: { children: string }) {
   return <span className="summary-label">{children}</span>;
 }
@@ -113,6 +231,7 @@ function ScreenshotMock({ node, nodeId }: { node: LearningNodeData; nodeId: stri
   const primary = focusItems[0];
   const secondary = focusItems[1];
   const generatedScreen = getNodeScreenSrc(nodeId);
+  const screenNotes = getScreenNotes(node);
 
   return (
     <figure
@@ -122,7 +241,7 @@ function ScreenshotMock({ node, nodeId }: { node: LearningNodeData; nodeId: stri
     >
       {generatedScreen ? (
         <img
-          alt={`${node.title}の生成画面例`}
+          alt={`${category.title}問題で${node.title}を見ている作業画面`}
           className="generated-screen-img"
           decoding="async"
           loading="lazy"
@@ -167,8 +286,9 @@ function ScreenshotMock({ node, nodeId }: { node: LearningNodeData; nodeId: stri
         </>
       )}
       <figcaption>
-        <strong>見る点</strong>
-        <span>{primary?.label ?? node.title}</span>
+        <span><strong>観察</strong>{screenNotes.observation}</span>
+        <span><strong>判断</strong>{screenNotes.judgement}</span>
+        <span><strong>次</strong>{screenNotes.next}</span>
       </figcaption>
     </figure>
   );
@@ -259,6 +379,11 @@ export function App() {
   );
   const firstSteps = selectedNode.data.observe.slice(0, 3);
   const beginnerGuide = getBeginnerGuide(selectedNode.data);
+  const nodeFocus = getNodeFocus(selectedNode.data);
+  const judgementGuide = getJudgementGuide(selectedNode.data);
+  const stuckGuide = getStuckGuide(selectedNode.data);
+  const memoGuide = getMemoGuide(selectedNode.data);
+  const categoryDeepGuide = categoryDeepGuides[selectedNode.data.category];
 
   const focusNode = useCallback(
     (nodeId: string) => {
@@ -358,7 +483,7 @@ export function App() {
           <div className="corridor-section corridor-current-section">
             <span className="corridor-label sr-only">現在地</span>
             <div className="corridor-card corridor-card-current">
-              <span className="sr-only">{phaseUi[selectedNode.data.phase].label}</span>
+              <span>現在地</span>
               <strong>{selectedNode.data.title}</strong>
             </div>
           </div>
@@ -375,7 +500,7 @@ export function App() {
                     onClick={() => focusNode(node.id)}
                     type="button"
                   >
-                    <span className="sr-only">同じ段階</span>
+                    <span>同じ段階</span>
                     <strong>{node.data.title}</strong>
                   </button>
                 ))}
@@ -395,7 +520,7 @@ export function App() {
                     onClick={() => focusNode(node.id)}
                     type="button"
                   >
-                    <span className="sr-only">次の段階</span>
+                    <span>次へ</span>
                     <strong>{node.data.title}</strong>
                   </button>
                 ))}
@@ -415,7 +540,7 @@ export function App() {
                     onClick={() => focusNode(node.id)}
                     type="button"
                   >
-                    <span className="sr-only">前提確認</span>
+                    <span>戻る</span>
                     <strong>{getConnectionLabel(selectedNode.data, node.data)}</strong>
                   </button>
                 ))}
@@ -443,54 +568,50 @@ export function App() {
               <p className="lead">{compactText(selectedNode.data.summary)}</p>
             </div>
 
-            <ScreenshotMock node={selectedNode.data} nodeId={selectedNode.id} />
-
-            <section className="beginner-guide" aria-label="beginner guide">
-              <h3>読み方</h3>
-              <div>
-                <p>{beginnerGuide.start}</p>
-                <p>{beginnerGuide.why}</p>
-                <p>{beginnerGuide.compare}</p>
-              </div>
+            <section className="focus-brief" aria-label="current focus">
+              <span>まず見る一点</span>
+              <strong>{nodeFocus.label}</strong>
+              <p>{nodeFocus.text}</p>
             </section>
 
-            <section className="learning-brief">
-              <h3>最初に見ること</h3>
+            <ScreenshotMock node={selectedNode.data} nodeId={selectedNode.id} />
+
+            <details className="detail-block detail-block-primary">
+              <summary><SummaryLabel>観察の仕方</SummaryLabel></summary>
               <p>{selectedNode.data.intent}</p>
-              <ol>
-                {firstSteps.map((item) => (
+              <p>{beginnerGuide.start}</p>
+              <ol className="observation-steps">
+                {firstSteps.map((item, index) => (
                   <li key={item.label}>
-                    <strong>{item.label}</strong>
-                    <span>{item.how}</span>
-                    <em>{item.what}</em>
+                    <span>{String(index + 1).padStart(2, '0')}</span>
+                    <div>
+                      <strong>{item.label}</strong>
+                      <p>{item.how}</p>
+                      <em>{item.what}</em>
+                    </div>
                   </li>
                 ))}
               </ol>
-            </section>
+              <p>{beginnerGuide.why}</p>
+              <p>{beginnerGuide.compare}</p>
+            </details>
 
-            {connectionItems.length > 0 && (
-              <section className="detail-next-strip" aria-label="next learning nodes">
-                <span>次に見る</span>
+            <details className="detail-block">
+              <summary><SummaryLabel>判断基準</SummaryLabel></summary>
+              <div className="decision-grid">
                 <div>
-                  {connectionItems.map(({ node, kind }) => (
-                    <button
-                      className={`relation-${getFlowRelation(selectedNode.data, node.data)}`}
-                      key={node.id}
-                      onClick={() => focusNode(node.id)}
-                      type="button"
-                    >
-                      <em aria-hidden="true" />
-                      <span className="sr-only">{kind}</span>
-                      <strong>{getConnectionLabel(selectedNode.data, node.data)}</strong>
-                    </button>
-                  ))}
+                  <span>進める</span>
+                  <p>{judgementGuide.ready}</p>
+                  <p>{judgementGuide.compare}</p>
+                  <p>{judgementGuide.next}</p>
                 </div>
-              </section>
-            )}
-
-            {selectedNode.data.branches.length > 0 && (
-              <details className="detail-block">
-                <summary><SummaryLabel>条件が見えたら</SummaryLabel></summary>
+                <div>
+                  <span>まだ戻る</span>
+                  <p>{judgementGuide.back}</p>
+                  <p>見た場所、値、表示差分のどれかが説明できない時は、次の段階へ進まない。</p>
+                </div>
+              </div>
+              {selectedNode.data.branches.length > 0 && (
                 <div className="branch-cards">
                   {selectedNode.data.branches.map((branch) => {
                     const targetNode = getNode(branch.targetId);
@@ -508,16 +629,42 @@ export function App() {
                     );
                   })}
                 </div>
-              </details>
-            )}
+              )}
+            </details>
 
             <details className="detail-block">
-              <summary><SummaryLabel>補足</SummaryLabel></summary>
+              <summary><SummaryLabel>詰まった時</SummaryLabel></summary>
+              <ul className="stuck-list">
+                {stuckGuide.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </details>
+
+            <details className="detail-block">
+              <summary><SummaryLabel>詳しい説明とメモ</SummaryLabel></summary>
               <p>{selectedNode.data.what}</p>
               <p>{selectedNode.data.details}</p>
+              <div className="deep-guide">
+                <div>
+                  <span>具体例</span>
+                  <p>{categoryDeepGuide.example}</p>
+                </div>
+                <div>
+                  <span>よくある詰まり</span>
+                  <p>{categoryDeepGuide.trap}</p>
+                </div>
+              </div>
               <p>
                 初心者はツール名や脆弱性名に飛びつきやすいが、このノードではまず「見えた事実」「それを見た場所」「次に確認する理由」を分ける。三つを一文で説明できると、次のノードへ進む判断が安定する。
               </p>
+              <div className="memo-template">
+                <span>メモの形</span>
+                <code>{memoGuide.fact}</code>
+                <code>{memoGuide.place}</code>
+                <code>{memoGuide.reason}</code>
+                <code>{categoryDeepGuide.memo}</code>
+              </div>
               <p className="safety-note">{selectedNode.data.safety}</p>
             </details>
           </motion.section>
@@ -545,6 +692,17 @@ function CategoryGate({ onSelect }: CategoryGateProps) {
       <div className="category-shell">
         <div className="category-heading">
           <h1>ジャンルを選ぶ</h1>
+          <details className="category-chooser-help">
+            <summary><SummaryLabel>選び方</SummaryLabel></summary>
+            <div>
+              {categories.map((category) => (
+                <p key={category.id}>
+                  <strong>{category.title}</strong>
+                  <span>{category.choose}</span>
+                </p>
+              ))}
+            </div>
+          </details>
         </div>
         <div className="category-grid">
           {categories.map((category) => (
@@ -565,6 +723,7 @@ function CategoryGate({ onSelect }: CategoryGateProps) {
                     <span key={keyword}>{keyword}</span>
                   ))}
                 </span>
+                <p>{category.choose}</p>
                 <em>はじめる</em>
               </button>
             </article>
